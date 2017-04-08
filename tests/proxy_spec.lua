@@ -175,6 +175,14 @@ b.describe("DBus Proxy objects", function ()
                     )
 
                     assert.equals("Gio.DBusProxy", proxy._proxy._name)
+                    -- g-* properties
+                    assert.equals("org.freedesktop.DBus", proxy.interface)
+                    assert.equals("/org/freedesktop/DBus", proxy.object_path)
+                    assert.equals("org.freedesktop.DBus", proxy.name)
+                    assert.equals(Bus.SESSION, proxy.connection)
+                    assert.same({NONE = true}, proxy.flags)
+                    assert.equals("org.freedesktop.DBus", proxy.name_owner)
+
                     -- generated methods
                     assert.is_function(proxy.Introspect)
                     assert.equals("<!DOCTYPE",

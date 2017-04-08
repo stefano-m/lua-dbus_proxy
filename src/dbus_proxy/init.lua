@@ -417,6 +417,13 @@ function Proxy:new(opts)
   o.accessors = {}
   o.signals = {}
   o._proxy = proxy
+  -- g-* properties
+  o.connection = proxy["g-connection"]
+  o.flags = proxy["g-flags"]
+  o.interface = proxy["g-interface-name"]
+  o.name = proxy["g-name"]
+  o.name_owner = proxy["g-name-owner"]
+  o.object_path = proxy["g-object-path"]
 
   setmetatable(o, meta)
   self.__index = self
