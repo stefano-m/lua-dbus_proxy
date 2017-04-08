@@ -1,0 +1,426 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Lua DBus Proxy Documentation</title>
+    <link rel="stylesheet" href="ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>dbus_proxy</h1>
+
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Class_Proxy">Class Proxy </a></li>
+<li><a href="#_bus_Functions">_bus Functions</a></li>
+<li><a href="#_variant_Functions">_variant Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><strong>dbus_proxy</strong></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="topics/README.md.html">README</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>dbus_proxy</code></h1>
+<p>Simple API around GLib's GIO:GDBusProxy built on top of lgi.</p>
+<p>
+
+</p>
+    <h3>Info:</h3>
+    <ul>
+        <li><strong>Copyright</strong>: 2017 Stefano Mazzucco</li>
+        <li><strong>License</strong>: Apache License, version 2.0</li>
+        <li><strong>Author</strong>: Stefano Mazzucco <stefano AT curso DOT re></li>
+    </ul>
+
+
+<h2><a href="#Class_Proxy">Class Proxy </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Proxy:connect_signal">Proxy:connect_signal (callback, signal_name[, sender_name])</a></td>
+	<td class="summary">Connect a callback function to a signal.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Proxy:on_properties_changed">Proxy:on_properties_changed (callback)</a></td>
+	<td class="summary">Call a function when the properties of the proxy object change.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Proxy:new">Proxy:new (opts)</a></td>
+	<td class="summary">Create a new proxy object</td>
+	</tr>
+</table>
+<h2><a href="#_bus_Functions">_bus Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Bus">Bus</a></td>
+	<td class="summary">Available connections to the DBus daemon.</td>
+	</tr>
+</table>
+<h2><a href="#_variant_Functions">_variant Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#variant.strip">variant.strip (v)</a></td>
+	<td class="summary">Strip an <code>lgi.GLib.VariantType</code> object of its types</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header has-description"><a name="Class_Proxy"></a>Class Proxy </h2>
+
+          <div class="section-description">
+
+<p>A proxy object</p>
+
+<p>Proxy objects acts as intermediares between your lua code and DBus.   All the
+properties, methods and signals of the object are exposed.  Be aware that
+properties, methods and signals will likely be written in <code>CamelCase</code> since
+this it the convention in DBus (e.g. <code>proxy.SomeProperty</code> or
+<code>proxy:SomeMethod()</code>). Please refer to the documentation of the object you are
+proxying for more information.</p>
+
+<p>When a property in a DBus object
+changes, the same change is reflected in the proxy.  Similarly, when a signal
+is emitted, the proxy object is notified accordingly.</p>
+
+<p>For all this to work though, the code must run
+inside
+<a href="https://developer.gnome.org/glib/stable/glib-The-Main-Event-Loop.html#glib-The-Main-Event-Loop.description">GLib's main event loop</a>. This
+can be achieved in two ways:</p>
+
+<ol>
+    <li><p>Create
+a
+<a href="https://developer.gnome.org/glib/stable/glib-The-Main-Event-Loop.html#GMainLoop">main loop</a> and
+run it when the application starts:</p>
+
+
+<pre><code>   local GLib = require("lgi").GLib
+   -- Set up the application, then do:
+   local main_loop = GLib.MainLoop()
+   main_loop:run()
+   -- use main_loop:quit() to stop the main loop.
+</code></pre></li>
+    <li><p>Use more fine-grained control by running an iteration at a time from
+the
+<a href="https://developer.gnome.org/glib/stable/glib-The-Main-Event-Loop.html#GMainContext">main context</a>;
+this is particularly useful when you want to integrate your code with an
+<strong>external main loop</strong>:</p>
+
+
+<pre><code>  local GLib = require("lgi").GLib
+  -- Set up the code, then do
+  local ctx = GLib.MainLoop():get_context()
+  -- Run a single non-blocking iteration
+  if ctx:iteration() == true then
+    print("something changed!")
+  end
+  -- Run a single blocking iteration
+  if ctx:iteration(true) == true then
+    print("something changed here too!")
+  end
+</code></pre></li>
+</ol>
+
+
+
+          </div>
+            <h3>Usage:</h3>
+            <pre class="example">p = <span class="global">require</span>(<span class="string">"dbus_proxy"</span>)
+proxy = p.Proxy:new(
+                      {
+                        bus = p.Bus.SYSTEM,
+                        name = <span class="string">"com.example.BusName"</span>,
+                        interface = <span class="string">"com.example.InterfaceName"</span>,
+                        path = <span class="string">"/com/example/objectPath"</span>
+                      }
+                    )
+proxy:SomeMethod()
+proxy:SomeMethodWithArguments(<span class="string">"hello"</span>, <span class="number">123</span>)
+proxy.SomeProperty</pre>
+    <dl class="function">
+    <dt>
+    <a name = "Proxy:connect_signal"></a>
+    <strong>Proxy:connect_signal (callback, signal_name[, sender_name])</strong>
+    </dt>
+    <dd>
+    Connect a callback function to a signal.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">callback</span>
+            <span class="types"><span class="type">function</span></span>
+         a callback function to be called.  The proxy
+object itself and the parameters from the signal as (simple lua types) will be
+passed to the callback.  when the signal is emitted
+        </li>
+        <li><span class="parameter">signal_name</span>
+            <span class="types"><span class="type">string</span></span>
+         the name of the signal
+        </li>
+        <li><span class="parameter">sender_name</span>
+            <span class="types"><span class="type">string</span></span>
+         the name of the sender.  This may have the form
+of a well known name (e.g. <code>&quot;org.freedesktop.DBus&quot;</code>) or a specific connection
+name ( e.g. <code>&quot;:1.113&quot;</code>).  See also the <a href="https://dbus.freedesktop.org/doc/dbus-tutorial.html#bus-names">Bus Names section of the DBus
+tutorial</a>.  If
+specified, only signals from this sender will be taken into account.
+         (<em>optional</em>)
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">proxy:connect_signal(
+  <span class="keyword">function</span> (p, x, y)
+    <span class="global">assert</span>(p == proxy)
+    <span class="global">print</span>(<span class="string">"SomeSignalName emitted with params: "</span>, x, y)
+  <span class="keyword">end</span>,
+  <span class="string">"SomeSignalName"</span>
+)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "Proxy:on_properties_changed"></a>
+    <strong>Proxy:on_properties_changed (callback)</strong>
+    </dt>
+    <dd>
+    Call a function when the properties of the proxy object change.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">callback</span>
+            <span class="types"><span class="type">function</span></span>
+         a function that will be called when the
+ properties change. The callback will receive the proxy object itself and two
+ tables: <code>changed_properties</code> (a table where the keys are the properties that
+ changed and the values the new values) and <code>invalidated_properties</code> (an array
+ containg the names of the invalidated properties).  Either may be empty.  The
+ local cache has already been updated when the signal is emitted, so the
+ properties on the object will be up-to-date
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">proxy:on_properties_changed(<span class="keyword">function</span> (p, changed, invalidated)
+    <span class="global">assert</span>(p == proxy)
+    <span class="global">print</span>(<span class="string">"******"</span>)
+    <span class="global">print</span>(<span class="string">"changed properties:"</span>)
+    <span class="keyword">for</span> k, v <span class="keyword">in</span> <span class="global">pairs</span>(changed) <span class="keyword">do</span>
+      <span class="global">print</span>(<span class="string">"name"</span>, k, <span class="string">"ne value"</span>, v)
+    <span class="keyword">end</span>
+    <span class="global">print</span>(<span class="string">"invalidated properties"</span>)
+    <span class="keyword">for</span> _, v <span class="keyword">in</span> <span class="global">ipairs</span>(invalidated) <span class="keyword">do</span>
+      <span class="global">print</span>(<span class="string">"name"</span>, v)
+    <span class="keyword">end</span>
+    <span class="global">print</span>(<span class="string">"******"</span>)
+<span class="keyword">end</span>)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "Proxy:new"></a>
+    <strong>Proxy:new (opts)</strong>
+    </dt>
+    <dd>
+    Create a new proxy object
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">opts</span>
+            <span class="types"><span class="type">table</span></span>
+
+<p> table that specifies what DBus object should be
+proxied.
+The <code>opts</code> table should have the following fields:</p>
+
+<ul>
+    <li><code>bus</code>: a DBus connection from the <a href="index.html#Bus">Bus</a> table</li>
+    <li><code>interface</code>: a (<strong>string</strong>) representing the interface name</li>
+    <li><code>name</code>: a (<strong>string</strong>) representing the Bus name</li>
+    <li><code>path</code>: a (<strong>string</strong>) representing the object path</li>
+    <li><code>flags</code>: one of the <a href="https://developer.gnome.org/gio/2.50/GDBusProxy.html#GDBusProxyFlags"><code>lgi.Gio.DBusProxyFlags</code></a>; defaults to <code>lgi.Gio.DBusProxyFlags.NONE</code> <em>(optional)</em></li>
+</ul>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a new proxy object
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="_bus_Functions"></a>_bus Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "Bus"></a>
+    <strong>Bus</strong>
+    </dt>
+    <dd>
+    Available connections to the DBus daemon.  Fields on this table
+can only be accessed. Trying to set fields will result in an error.
+
+
+    <h3>Fields:</h3>
+    <ul>
+        <li><span class="parameter">SESSION</span>
+         Connection to the session bus for this process
+        </li>
+        <li><span class="parameter">SYSTEM</span>
+          Connection to the system bus for this process
+        </li>
+        <li><span class="parameter">any_valid_dbus_address</span>
+         Connection to the
+<a href="https://dbus.freedesktop.org/doc/dbus-tutorial.html#addresses">DBus address</a>.
+If an invalid address is passed, its value will be <code>nil</code>.
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">Bus = <span class="global">require</span>(<span class="string">"dbus_proxy"</span>).Bus
+system_bus = Bus.SYSTEM
+session_bus = Bus.SESSION
+
+<span class="comment">-- This is a string that looks like
+</span><span class="comment">-- "unix:path=/run/user/1000/bus"
+</span>address = <span class="global">os</span>.getenv(<span class="string">"DBUS_SESSION_BUS_ADDRESS"</span>)
+
+bus = Bus[address]
+<span class="global">assert</span>(<span class="string">"Gio.DBusConnection"</span> == bus._name)
+
+invalid1 = Bus[<span class="string">"something really wrong"</span>]
+<span class="global">assert</span>(<span class="keyword">nil</span> == invalid1)
+
+invalid2 = Bus.this_will_not_work
+<span class="global">assert</span>(<span class="keyword">nil</span> == invalid2)</pre>
+    </ul>
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="_variant_Functions"></a>_variant Functions</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "variant.strip"></a>
+    <strong>variant.strip (v)</strong>
+    </dt>
+    <dd>
+    Strip an <code>lgi.GLib.VariantType</code> object of its types
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">v</span>
+            <span class="types"><span class="type">lgi.GLib.VariantType</span></span>
+         an <code>lgi.GLib.VariantType</code> object
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+
+<p> simple lua data (nested structures will be stripped too). The C to lua
+type correspondence is straightforward:</p>
+
+<ul>
+    <li>numeric types will be returned as lua numbers</li>
+    <li>booleans are preserved</li>
+    <li>string are preserved,</li>
+    <li>object paths (e.g. <code>/org/freedesktop/DBus</code>) will be returned as strings too</li>
+    <li>arrays (homogeneous types, signature <code>a</code>) and tuples (mixed types, signature <code>()</code>) will be returned as lua arrays</li>
+    <li>dictionaries (signature <code>{}</code>) will be returned as lua tables</li>
+</ul>
+
+
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">GVariant = <span class="global">require</span>(<span class="string">"lgi"</span>).GLib.VariantType
+
+<span class="comment">-- strip a nested variant
+</span>v1 = GVariant(<span class="string">"v"</span>, GVariant(<span class="string">"s"</span>, <span class="string">"in a variant"</span>))
+stripped1 = variant.strip(v1)
+<span class="comment">-- "in a variant"
+</span>
+<span class="comment">-- strip a dictionary of variants
+</span>v2 = GVariant(<span class="string">"a{sv}"</span>, {one = GVariant(<span class="string">"i"</span>, <span class="number">123</span>),
+                              two = GVariant(<span class="string">"s"</span>, <span class="string">"Lua!"</span>)})
+stripped2 = variant.strip(v2)
+<span class="comment">-- {one = 123, two = "Lua!"}
+</span>
+<span class="comment">-- strip a nested array
+</span>v3 = GVariant(<span class="string">"aai"</span>, {{<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>}, {<span class="number">4</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>}})
+stripped3 = variant.strip(v3)
+<span class="comment">-- {{1, 2, 3}, {4, 1, 2, 3}, n=2}</span></pre>
+    </ul>
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i style="float:right;">Last updated 2017-04-08 20:37:26 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
