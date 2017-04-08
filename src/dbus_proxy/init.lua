@@ -51,6 +51,16 @@ When a property in a DBus object
 changes, the same change is reflected in the proxy.  Similarly, when a signal
 is emitted, the proxy object is notified accordingly.
 
+Additionally, the following fields reflect the corresponding [`g-*`
+properties](https://developer.gnome.org/gio/2.50/GDBusProxy.html#GDBusProxy.properties):
+
+- `connection`: g-connection
+- `flags`: g-flags
+- `interface`: g-interface-name
+- `name`: g-name
+- `name_owner`: g-name-owner
+- `object_path`: g-object-path
+
 For all this to work though, the code must run
 inside
 [GLib's main event loop](https://developer.gnome.org/glib/stable/glib-The-Main-Event-Loop.html#glib-The-Main-Event-Loop.description). This
@@ -88,7 +98,6 @@ can be achieved in two ways:
             print("something changed here too!")
           end
 
-
 @type Proxy
 @usage
 p = require("dbus_proxy")
@@ -104,7 +113,8 @@ proxy:SomeMethod()
 proxy:SomeMethodWithArguments("hello", 123)
 proxy.SomeProperty
 ]]
-local Proxy = {}
+local Proxy = {
+}
 
 --- Build a lgi.GLib.Variant tuple that can be used to call a method
 -- @param args[type=table] an array of tables that have the `type` and `value` fields.
