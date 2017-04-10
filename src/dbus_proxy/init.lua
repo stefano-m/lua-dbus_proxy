@@ -23,6 +23,7 @@
   @module dbus_proxy
 ]]
 
+local string = string
 
 local lgi = require("lgi")
 
@@ -270,6 +271,16 @@ end
 -- @param[type=Proxy] proxy a proxy object
 local function generate_fields(proxy)
   local xml_data_str = introspect(proxy)
+
+  if not xml_data_str then
+    error(
+      string.format(
+        "Failed to introspect object '%s', XML data was %s",
+        proxy.name, xml_data_str
+      )
+    )
+  end
+
   local node = DBusNodeInfo.new_for_xml(xml_data_str)
 
   -- NOTE: does not take into account nested nodes.
