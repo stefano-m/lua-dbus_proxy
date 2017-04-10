@@ -287,7 +287,14 @@ local function generate_fields(proxy)
   for _, iface in ipairs(node.interfaces) do
 
     for _, method in ipairs(iface.methods) do
-      proxy[method.name] = generate_method(iface.name, method)
+      if not proxy[method.name] then
+        proxy[method.name] = generate_method(iface.name, method)
+      else
+        -- override only if the interface name is the same as the proxy's
+        if iface.name == proxy.interface then
+          proxy[method.name] = generate_method(iface.name, method)
+        end
+      end
     end
 
     for _, signal in ipairs(iface.signals) do
