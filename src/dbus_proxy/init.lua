@@ -439,12 +439,12 @@ function Proxy:new(opts)
   o.signals = {}
   o._proxy = proxy
   -- g-* properties
-  o.connection = proxy["g-connection"]
-  o.flags = proxy["g-flags"]
-  o.interface = proxy["g-interface-name"]
-  o.name = proxy["g-name"]
-  o.name_owner = proxy["g-name-owner"]
-  o.object_path = proxy["g-object-path"]
+  o.connection = proxy.g_connection
+  o.flags = proxy.g_flags
+  o.interface = proxy.g_interface_name
+  o.name = proxy.g_name
+  o.name_owner = proxy.g_name_owner
+  o.object_path = proxy.g_object_path
 
   setmetatable(o, meta)
   self.__index = self
