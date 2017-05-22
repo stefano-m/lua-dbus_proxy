@@ -180,10 +180,11 @@ end
 --- Set a cached property of a proxy object
 -- @param[type=Proxy] proxy a proxy object
 -- @param[type=string] name the name of the property
--- @param[type=any] value the value to be set
--- @param[type=string] signature the GDBus signature of the value (e.g. `"s"` for "string" or `"ai"` for "array of integers")
-local function set_property(proxy, name, value, signature)
-  local variant_value = GVariant(signature, value)
+-- @param[type=table] opts containing the following attributes: <br>
+-- -  `value` the value to be set <br>
+-- -  `signature` the DBus signature as a string
+local function set_property(proxy, name, opts)
+  local variant_value = GVariant(opts.signature, opts.value)
   proxy._proxy:set_cached_property(name, variant_value)
 end
 
@@ -249,8 +250,8 @@ local function generate_accessor(property)
   end
 
   if property.flags.WRITABLE then
-    accessor.setter = function (proxy, value)
-      set_property(proxy, value, property.name)
+    accessor.setter = function (proxy, opts)
+      set_property(proxy, property.name, opts)
     end
   else
     accessor.setter =  function ()
