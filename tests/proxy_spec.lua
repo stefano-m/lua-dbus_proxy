@@ -140,8 +140,8 @@ b.describe("Stripping GVariant of its type", function ()
              end)
 
              b.it("works on simple dictionary types", function ()
-                    local v = GVariant("a{ss}", {one = "Hello", two = "Lua!"})
-                    assert.same({one = "Hello", two = "Lua!"}, variant.strip(v))
+                    local v = GVariant("a{ss}", {one = "Hello", two = "Lua!", n = "Yes"})
+                    assert.same({one = "Hello", two = "Lua!", n = "Yes"}, variant.strip(v))
              end)
 
              b.it("works on nested dictionary types", function ()
@@ -157,6 +157,27 @@ b.describe("Stripping GVariant of its type", function ()
                     local v = GVariant("a{sv}", {one = GVariant("i", 123),
                                                  two = GVariant("s", "Lua!")})
                     assert.same({one = 123, two = "Lua!"}, variant.strip(v))
+             end)
+
+             b.it("works on tuples of dictionaries", function ()
+
+                    local v = GVariant(
+                      "(a{sv})",
+                      {
+                        {
+                          one = GVariant("s", "hello"),
+                          two = GVariant("i", 123)
+                        }
+                      }
+                    )
+
+                    local actual = variant.strip(v)
+
+                    assert.is_true(#actual == 1)
+
+                    assert.same(
+                      {one = "hello", two = 123},
+                      actual[1])
              end)
 
 end)
