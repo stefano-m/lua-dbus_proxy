@@ -65,9 +65,22 @@ function variant.strip(v)
 
   if v:is_container() and not v:is_of_type(VariantType.VARIANT) then
     local out = {}
-    for key, val in v:pairs() do
-      out[key] = variant.strip(val)
+    local n_children = v:n_children()
+    local idx = 0
+
+    local is_dict = v:is_of_type(VariantType.DICTIONARY)
+    while idx < n_children do
+      local val = v:get_child_value(idx)
+      idx = idx + 1
+      if is_dict then
+        local key = val[1]
+        local value = variant.strip(val[2])
+        out[key] = variant.strip(value)
+      else
+        out[idx] = variant.strip(val)
+      end
     end
+
     return out
   else
     return variant.strip(v.value)
