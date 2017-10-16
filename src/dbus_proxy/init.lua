@@ -341,7 +341,7 @@ local meta = {
 
 @param[type=function] callback a callback function to be called.  The proxy
 object itself and the parameters from the signal as (simple lua types) will be
-passed to the callback.  when the signal is emitted
+passed to the callback when the signal is emitted
 
 @param[type=string] signal_name the name of the signal
 
