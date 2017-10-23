@@ -20,7 +20,8 @@ package = "dbus_proxy"
     modules = {
       ["dbus_proxy.init"] = "src/dbus_proxy/init.lua",
       ["dbus_proxy._variant"] = "src/dbus_proxy/_variant.lua",
-      ["dbus_proxy._bus"] = "src/dbus_proxy/_bus.lua"
+      ["dbus_proxy._bus"] = "src/dbus_proxy/_bus.lua",
+      ["dbus_proxy._proxy"] = "src/dbus_proxy/_proxy.lua",
     },
     copy_directories = { "docs", "tests"}
  }

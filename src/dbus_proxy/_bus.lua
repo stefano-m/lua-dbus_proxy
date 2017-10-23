@@ -14,7 +14,6 @@
   limitations under the License.
 ]]
 
-
 ---  @submodule dbus_proxy
 
 local Gio = require("lgi").Gio

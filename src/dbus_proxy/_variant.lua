@@ -15,6 +15,7 @@
 ]]
 
 ---  @submodule dbus_proxy
+
 local VariantType = require("lgi").GLib.VariantType
 
 local variant = {}
