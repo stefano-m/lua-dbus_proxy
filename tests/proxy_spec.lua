@@ -336,7 +336,7 @@ b.describe("Monitored proxy objects", function ()
                       interface = "com.example.Test1"
                     }
 
-                    for i, option in ipairs(options) do
+                    for _, option in ipairs(options) do
                       local opts = {}
                       for k, v in pairs(correct_options) do
                         if k ~= option then
