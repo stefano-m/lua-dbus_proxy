@@ -106,8 +106,7 @@ proxy:SomeMethod()
 proxy:SomeMethodWithArguments("hello", 123)
 proxy.SomeProperty
 ]]
-local Proxy = {
-}
+local Proxy = {}
 
 --- Build a lgi.GLib.Variant tuple that can be used to call a method
 -- @param args[type=table] an array of tables that have the `type` and `value` fields.
