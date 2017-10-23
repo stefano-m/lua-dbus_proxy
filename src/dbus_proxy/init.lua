@@ -26,9 +26,11 @@
 local Bus = require("dbus_proxy._bus")
 local Proxy = require("dbus_proxy._proxy")
 local variant = require("dbus_proxy._variant")
+local monitored = require("dbus_proxy._monitored")
 
 return {
   Proxy = Proxy,
   Bus = Bus,
-  variant = variant
+  variant = variant,
+  monitored = monitored,
 }

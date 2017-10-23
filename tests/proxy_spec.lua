@@ -10,6 +10,7 @@ local p = require("dbus_proxy")
 local Bus = p.Bus
 local Proxy = p.Proxy
 local variant = p.variant
+local monitored = p.monitored
 
 b.describe("The Bus table", function ()
              b.it("does not allow to set values", function ()
@@ -318,5 +319,78 @@ b.describe("DBus Proxy objects", function ()
                       end,
                       "Invalid signal: NotValid")
 
+             end)
+end)
+
+b.describe("Monitored proxy objects", function ()
+             local ctx = GLib.MainLoop():get_context()
+
+             b.it("can validate the options", function ()
+
+                    local options = { "bus", "name", "interface", "path" }
+
+                    local correct_options = {
+                      bus = Bus.SESSION,
+                      name = "com.example.Test1",
+                      path = "/com/example/Test1",
+                      interface = "com.example.Test1"
+                    }
+
+                    for i, option in ipairs(options) do
+                      local opts = {}
+                      for k, v in pairs(correct_options) do
+                        if k ~= option then
+                          opts[k] = v
+                        end
+                        assert.has_error(function ()
+                            local _ = monitored.new(opts)
+                        end)
+                      end
+                    end
+
+             end)
+
+             b.it("can be disconnected", function ()
+
+                    local name = "org.mpris.MediaPlayer2.not_a_thing"
+
+                    local opts = {
+                      bus = Bus.SESSION,
+                      name = name,
+                      interface = "org.mpris.MediaPlayer2.Player",
+                      path = "/org/mpris/MediaPlayer2"
+                    }
+
+                    local proxy = monitored.new(opts)
+
+                    -- Run an iteration of the loop (blocking)
+                    -- to ensure that the signal is emitted.
+                    assert.is_true(ctx:iteration(true))
+
+                    assert.is_false(proxy.is_connected)
+
+                    assert.has_error(
+                      function ()
+                        local _ = proxy.Metadata
+                      end,
+                      name .. " disconnected")
+             end)
+
+             b.it("can be connected", function ()
+                    -- Session names can be created, so they are connected.
+                    local opts = {
+                      bus = Bus.SESSION,
+                      name = "com.example.Test1",
+                      path = "/com/example/Test1",
+                      interface = "com.example.Test1"
+                    }
+
+                    local proxy = monitored.new(opts)
+
+                    -- Run an iteration of the loop (blocking)
+                    -- to ensure that the signal is emitted.
+                    assert.is_true(ctx:iteration(true))
+
+                    assert.is_true(proxy.is_connected)
              end)
 end)
