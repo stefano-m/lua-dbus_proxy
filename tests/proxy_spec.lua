@@ -325,6 +325,15 @@ end)
 b.describe("Monitored proxy objects", function ()
              local ctx = GLib.MainLoop():get_context()
 
+             local dbus = Proxy:new(
+               {
+                 bus = Bus.SESSION,
+                 name = "org.freedesktop.DBus",
+                 path= "/org/freedesktop/DBus",
+                 interface = "org.freedesktop.DBus"
+               }
+             )
+
              b.it("can validate the options", function ()
 
                     local options = { "bus", "name", "interface", "path" }
@@ -355,16 +364,30 @@ b.describe("Monitored proxy objects", function ()
                     local name = "com.example.Test3"
 
                     local opts = {
-                      bus = Bus.SYSTEM,
+                      bus = Bus.SESSION,
                       name = name,
                       interface = name,
                       path = "/com/example/Test3"
                     }
 
+                    local DBUS_NAME_FLAG_REPLACE_EXISTING = 2
+                    assert.equals(
+                      1,
+                      dbus:RequestName(name,
+                                       DBUS_NAME_FLAG_REPLACE_EXISTING)
+                    )
+
+                    assert.is_true(ctx:iteration(true))
+
+                    assert.equals(
+                      1,
+                      dbus:ReleaseName(name)
+                    )
+
+                    assert.is_true(ctx:iteration(true))
+
                     local proxy = monitored.new(opts)
 
-                    -- Run an iteration of the loop (blocking)
-                    -- to ensure that the signal is emitted.
                     assert.is_true(ctx:iteration(true))
 
                     assert.is_false(proxy.is_connected)
@@ -377,15 +400,6 @@ b.describe("Monitored proxy objects", function ()
              end)
 
              b.it("can be connected", function ()
-
-                    local dbus = Proxy:new(
-                      {
-                        bus = Bus.SESSION,
-                        name = "org.freedesktop.DBus",
-                        path= "/org/freedesktop/DBus",
-                        interface = "org.freedesktop.DBus"
-                      }
-                    )
 
                     local bus_name = "com.example.Test4"
 
@@ -404,14 +418,10 @@ b.describe("Monitored proxy objects", function ()
                                        DBUS_NAME_FLAG_REPLACE_EXISTING)
                     )
 
-                    -- Run an iteration of the loop (blocking)
-                    -- to ensure that the signal is emitted.
                     assert.is_true(ctx:iteration(true))
 
                     local proxy = monitored.new(opts)
 
-                    -- Run an iteration of the loop (blocking)
-                    -- to ensure that the signal is emitted.
                     assert.is_true(ctx:iteration(true))
 
                     assert.is_true(proxy.is_connected)
