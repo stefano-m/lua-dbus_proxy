@@ -331,9 +331,9 @@ b.describe("Monitored proxy objects", function ()
 
                     local correct_options = {
                       bus = Bus.SESSION,
-                      name = "com.example.Test1",
-                      path = "/com/example/Test1",
-                      interface = "com.example.Test1"
+                      name = "com.example.Test2",
+                      path = "/com/example/Test2",
+                      interface = "com.example.Test2"
                     }
 
                     for _, option in ipairs(options) do
@@ -352,13 +352,13 @@ b.describe("Monitored proxy objects", function ()
 
              b.it("can be disconnected", function ()
 
-                    local name = "org.mpris.MediaPlayer2.not_a_thing"
+                    local name = "com.example.Test3"
 
                     local opts = {
-                      bus = Bus.SESSION,
+                      bus = Bus.SYSTEM,
                       name = name,
-                      interface = "org.mpris.MediaPlayer2.Player",
-                      path = "/org/mpris/MediaPlayer2"
+                      interface = name,
+                      path = "/com/example/Test3"
                     }
 
                     local proxy = monitored.new(opts)
@@ -377,13 +377,36 @@ b.describe("Monitored proxy objects", function ()
              end)
 
              b.it("can be connected", function ()
-                    -- Session names can be created, so they are connected.
+
+                    local dbus = Proxy:new(
+                      {
+                        bus = Bus.SESSION,
+                        name = "org.freedesktop.DBus",
+                        path= "/org/freedesktop/DBus",
+                        interface = "org.freedesktop.DBus"
+                      }
+                    )
+
+                    local bus_name = "com.example.Test4"
+
                     local opts = {
                       bus = Bus.SESSION,
-                      name = "com.example.Test1",
-                      path = "/com/example/Test1",
-                      interface = "com.example.Test1"
+                      name = bus_name,
+                      interface = bus_name,
+                      path = "/com/example/Test4",
                     }
+
+                    -- See dbus-shared.h
+                    local DBUS_NAME_FLAG_REPLACE_EXISTING = 2
+                    assert.equals(
+                      1,
+                      dbus:RequestName(bus_name,
+                                       DBUS_NAME_FLAG_REPLACE_EXISTING)
+                    )
+
+                    -- Run an iteration of the loop (blocking)
+                    -- to ensure that the signal is emitted.
+                    assert.is_true(ctx:iteration(true))
 
                     local proxy = monitored.new(opts)
 
