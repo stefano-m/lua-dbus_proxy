@@ -33,7 +33,7 @@ local variant = require("dbus_proxy._variant")
 
 --[[-- A proxy object
 
-Proxy objects acts as intermediares between your lua code and DBus.  All the
+Proxy objects act as intermediares between your lua code and DBus.  All the
 properties, methods and signals of the object are exposed.  Be aware that
 properties, methods and signals will likely be written in `CamelCase` since
 this it the convention in DBus (e.g. `proxy.SomeProperty` or
@@ -91,7 +91,7 @@ can be achieved in two ways:
             print("something changed here too!")
           end
 
-@type Proxy
+@table Proxy
 @usage
 p = require("dbus_proxy")
 proxy = p.Proxy:new(
