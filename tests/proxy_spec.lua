@@ -1,7 +1,7 @@
 -- Works with the 'busted' framework.
 -- http://olivinelabs.com/busted/
 local table = table
-local b = require("busted")
+require("busted")
 
 local GLib = require("lgi").GLib
 local GVariant = GLib.Variant
@@ -12,28 +12,28 @@ local Proxy = p.Proxy
 local variant = p.variant
 local monitored = p.monitored
 
-b.describe("The Bus table", function ()
-             b.it("does not allow to set values", function ()
+describe("The Bus table", function ()
+             it("does not allow to set values", function ()
                     assert.has_error(function ()
                         Bus.something = 1
                                      end, "Cannot set values")
              end)
 
-             b.it("can get the SYSTEM bus", function ()
+             it("can get the SYSTEM bus", function ()
                     assert.equals("userdata", type(Bus.SYSTEM))
                     assert.equals("Gio.DBusConnection", Bus.SYSTEM._name)
              end)
 
-             b.it("can get the SESSION bus", function ()
+             it("can get the SESSION bus", function ()
                     assert.equals("userdata", type(Bus.SESSION))
                     assert.equals("Gio.DBusConnection", Bus.SESSION._name)
              end)
 
-             b.it("returns a nil with a wrong DBus address", function ()
+             it("returns a nil with a wrong DBus address", function ()
                     assert.is_nil(Bus.wrong_thing)
              end)
 
-             b.it("can get the bus from an address", function ()
+             it("can get the bus from an address", function ()
                     local address = os.getenv("DBUS_SESSION_BUS_ADDRESS")
                     if address then
                       local bus = Bus[address]
@@ -45,78 +45,78 @@ b.describe("The Bus table", function ()
              end)
 end)
 
-b.describe("Stripping GVariant of its type", function ()
-             b.it("works on boolean types", function ()
+describe("Stripping GVariant of its type", function ()
+             it("works on boolean types", function ()
                     local v = GVariant("b", true)
                     assert.is_true(variant.strip(v))
              end)
 
-             b.it("works on byte types", function ()
+             it("works on byte types", function ()
                     local v = GVariant("y", 1)
                     assert.equals(1, variant.strip(v))
              end)
 
-             b.it("works on int16 types", function ()
+             it("works on int16 types", function ()
                     local v = GVariant("n", -32768)
                     assert.equals(-32768, variant.strip(v))
              end)
 
-             b.it("works on uint16 types", function ()
+             it("works on uint16 types", function ()
                     local v = GVariant("q", 65535)
                     assert.equals(65535, variant.strip(v))
              end)
 
-             b.it("works on int32 types", function ()
+             it("works on int32 types", function ()
                     local v = GVariant("i", -2147483648)
                     assert.equals(-2147483648, variant.strip(v))
              end)
 
-             b.it("works on uint32 types", function ()
+             it("works on uint32 types", function ()
                     local v = GVariant("u", 4294967295)
                     assert.equals(4294967295, variant.strip(v))
              end)
 
-             b.it("works on int64 types", function ()
+             it("works on int64 types", function ()
                     local v = GVariant("x", -14294967295)
                     assert.equals(-14294967295, variant.strip(v))
              end)
 
-             b.it("works on uint64 types", function ()
+             it("works on uint64 types", function ()
                     local v = GVariant("t", 14294967295)
                     assert.equals(14294967295, variant.strip(v))
              end)
 
-             b.it("works on double types", function ()
+             it("works on double types", function ()
                     local v = GVariant("d", 1.54)
                     assert.equals(1.54, variant.strip(v))
              end)
 
-             b.it("works on string types", function ()
+             it("works on string types", function ()
                     local v = GVariant("s", "Hello, Lua!")
                     assert.equals("Hello, Lua!", variant.strip(v))
              end)
 
-             b.it("works on object path types", function ()
+             it("works on object path types", function ()
                     local v = GVariant("o", "/some/path")
                     assert.equals("/some/path", variant.strip(v))
              end)
 
-             b.it("works on simple variant types", function ()
+             it("works on simple variant types", function ()
                     local v = GVariant("v", GVariant("s", "in a variant"))
                     assert.equals("in a variant", variant.strip(v))
              end)
 
-             b.it("works on simple array types", function ()
+             it("works on simple array types", function ()
                     local v = GVariant("ai", {4, 1, 2, 3})
                     assert.same({4, 1, 2, 3}, variant.strip(v))
              end)
 
-             b.it("works on simple nested array types", function ()
+             it("works on simple nested array types", function ()
                     local v = GVariant("aai", {{1, 2, 3}, {4, 1, 2, 3}})
                     assert.same({{1, 2, 3}, {4, 1, 2, 3}}, variant.strip(v))
              end)
 
-             b.it("works on array types of variant types", function ()
+             it("works on array types of variant types", function ()
                     local v = GVariant("av",
                                        {GVariant("s", "Hello"),
                                         GVariant("i", 8383),
@@ -124,28 +124,28 @@ b.describe("Stripping GVariant of its type", function ()
                     assert.same({"Hello", 8383, true}, variant.strip(v))
              end)
 
-             b.it("works on simple tuple types", function ()
+             it("works on simple tuple types", function ()
                     -- AKA "struct" in DBus
                     local v = GVariant("(is)", {4, "Hello"})
                     assert.same({4, "Hello"}, variant.strip(v))
              end)
 
-             b.it("works on simple nested tuple types", function ()
+             it("works on simple nested tuple types", function ()
                     local v = GVariant("(i(si))", {4, {"Hello", 2}})
                     assert.same({4, {"Hello", 2}}, variant.strip(v))
              end)
 
-             b.it("works on tuple types with Variants", function ()
+             it("works on tuple types with Variants", function ()
                     local v = GVariant("(iv)", {4, GVariant("s", "Hello")})
                     assert.same({4, "Hello"}, variant.strip(v))
              end)
 
-             b.it("works on simple dictionary types", function ()
+             it("works on simple dictionary types", function ()
                     local v = GVariant("a{ss}", {one = "Hello", two = "Lua!", n = "Yes"})
                     assert.same({one = "Hello", two = "Lua!", n = "Yes"}, variant.strip(v))
              end)
 
-             b.it("works on nested dictionary types", function ()
+             it("works on nested dictionary types", function ()
                     local v = GVariant("a{sa{ss}}",
                                        {one = {nested1 = "Hello"},
                                         two = {nested2 = "Lua!"}})
@@ -154,13 +154,13 @@ b.describe("Stripping GVariant of its type", function ()
                       variant.strip(v))
              end)
 
-             b.it("works on dictionary types with Variants", function ()
+             it("works on dictionary types with Variants", function ()
                     local v = GVariant("a{sv}", {one = GVariant("i", 123),
                                                  two = GVariant("s", "Lua!")})
                     assert.same({one = 123, two = "Lua!"}, variant.strip(v))
              end)
 
-             b.it("works on tuples of dictionaries", function ()
+             it("works on tuples of dictionaries", function ()
 
                     local v = GVariant(
                       "(a{sv})",
@@ -184,8 +184,8 @@ b.describe("Stripping GVariant of its type", function ()
 end)
 
 
-b.describe("DBus Proxy objects", function ()
-             b.it("can be created", function ()
+describe("DBus Proxy objects", function ()
+             it("can be created", function ()
 
                     local proxy = Proxy:new(
                       {
@@ -224,7 +224,7 @@ b.describe("DBus Proxy objects", function ()
                     )
              end)
 
-             b.it("can access properties", function ()
+             it("can access properties", function ()
                     -- This is a bit hacky, but I don't
                     -- know how to make it better.
                     local inside_ci = os.getenv("CI")
@@ -252,7 +252,7 @@ b.describe("DBus Proxy objects", function ()
                     end
              end)
 
-             b.it("can handle signals", function ()
+             it("can handle signals", function ()
 
                     local proxy = Proxy:new(
                       {
@@ -303,7 +303,7 @@ b.describe("DBus Proxy objects", function ()
                     assert.is_string(new_owner)
              end)
 
-             b.it("errors when connecting to an invalid signal", function ()
+             it("errors when connecting to an invalid signal", function ()
                     local proxy = Proxy:new(
                       {
                         bus = Bus.SESSION,
@@ -323,7 +323,7 @@ b.describe("DBus Proxy objects", function ()
              end)
 end)
 
-b.describe("Monitored proxy objects", function ()
+describe("Monitored proxy objects", function ()
              local ctx = GLib.MainLoop():get_context()
 
              local dbus = Proxy:new(
@@ -335,7 +335,7 @@ b.describe("Monitored proxy objects", function ()
                }
              )
 
-             b.it("can validate the options", function ()
+             it("can validate the options", function ()
 
                     local options = { "bus", "name", "interface", "path" }
 
@@ -360,7 +360,7 @@ b.describe("Monitored proxy objects", function ()
 
              end)
 
-             b.it("can be disconnected", function ()
+             it("can be disconnected", function ()
 
                     local name = "com.example.Test3"
 
@@ -400,7 +400,7 @@ b.describe("Monitored proxy objects", function ()
                       name .. " disconnected")
              end)
 
-             b.it("can be connected", function ()
+             it("can be connected", function ()
 
                     local bus_name = "com.example.Test4"
 
