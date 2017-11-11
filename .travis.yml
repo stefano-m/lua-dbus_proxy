@@ -27,7 +27,7 @@ before_install:
   - luarocks install busted
 
 install:
-  - luarocks install --only-deps dbus_proxy-devel-1.rockspec
+  - luarocks install --only-deps rockspec/dbus_proxy-devel-1.rockspec
 
 before_script:
   - export $(dbus-launch)
