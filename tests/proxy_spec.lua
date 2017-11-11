@@ -1,6 +1,6 @@
 -- Works with the 'busted' framework.
 -- http://olivinelabs.com/busted/
-
+local table = table
 local b = require("busted")
 
 local GLib = require("lgi").GLib
@@ -268,12 +268,12 @@ b.describe("DBus Proxy objects", function ()
                     local called = false
                     local received_proxy
                     local received_params
-                    local function callback(proxy_obj, params)
+                    local function callback(proxy_obj, ...)
                       -- don't do assertions in here because a failure
                       -- would just print an "Lgi-WARNING" message
                       called = true
                       received_proxy = proxy_obj
-                      received_params = params
+                      received_params = {...}
                     end
 
                     -- this signal is also used when *new* owners appear
@@ -297,9 +297,10 @@ b.describe("DBus Proxy objects", function ()
                     assert.is_true(called)
                     assert.equals(proxy, received_proxy)
                     assert.equals(3, #received_params)
-                    assert.equals(bus_name, received_params[1]) --name
-                    assert.equals('', received_params[2]) -- old owner
-                    assert.is_string(received_params[3]) -- new owner
+                    local owned_name, old_owner, new_owner = table.unpack(received_params)
+                    assert.equals(bus_name, owned_name)
+                    assert.equals('', old_owner)
+                    assert.is_string(new_owner)
              end)
 
              b.it("errors when connecting to an invalid signal", function ()

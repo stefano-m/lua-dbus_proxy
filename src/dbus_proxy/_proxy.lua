@@ -15,8 +15,8 @@
 ]]
 
 ---  @submodule dbus_proxy
-
 local string = string
+local table = table
 
 local lgi = require("lgi")
 
@@ -364,7 +364,7 @@ function Proxy:connect_signal(callback, signal_name, sender_name)
 
     if signal == signal_name then
       params = variant.strip(params)
-      return callback(self, params, sender_name)
+      return callback(self, table.unpack(params))
     end
   end
 
