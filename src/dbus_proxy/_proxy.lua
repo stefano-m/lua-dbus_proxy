@@ -105,6 +105,11 @@ proxy = p.Proxy:new(
 proxy:SomeMethod()
 proxy:SomeMethodWithArguments("hello", 123)
 proxy.SomeProperty
+
+local res, err =  proxy:SomeMethodWithError()
+if not res and err then
+    print("Error:", err)
+end
 ]]
 local Proxy = {}
 
@@ -147,11 +152,14 @@ end
 --
 local function call(proxy, interface, method, args)
   local params = build_params(args)
-  local out = proxy._proxy:call_sync(
+  local out, err = proxy._proxy:call_sync(
     interface .. "." .. method,
     params,
     DBusCallFlags.NONE,
     _DEFAULT_TIMEOUT)
+  if not out and err then
+    return out, err
+  end
   local result = variant.strip(out)
   if type(result) == "table" and #result == 1 then
     result = result[1]
@@ -262,13 +270,13 @@ end
 --
 -- @param[type=Proxy] proxy a proxy object
 local function generate_fields(proxy)
-  local xml_data_str = introspect(proxy)
+  local xml_data_str, err = introspect(proxy)
 
   if not xml_data_str then
     error(
       string.format(
-        "Failed to introspect object '%s', XML data was %s",
-        proxy.name, xml_data_str
+        "Failed to introspect object '%s'\nerror: %s\ncode: %s",
+        proxy.name, err or "<unknown>", err.code or "<unknown>"
       )
     )
   end
