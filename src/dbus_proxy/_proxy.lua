@@ -147,11 +147,14 @@ end
 --
 local function call(proxy, interface, method, args)
   local params = build_params(args)
-  local out = proxy._proxy:call_sync(
+  local out,err = proxy._proxy:call_sync(
     interface .. "." .. method,
     params,
     DBusCallFlags.NONE,
     _DEFAULT_TIMEOUT)
+  if not out and err then
+    return out, err
+  end
   local result = variant.strip(out)
   if type(result) == "table" and #result == 1 then
     result = result[1]
