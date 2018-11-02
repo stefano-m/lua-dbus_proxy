@@ -265,13 +265,13 @@ end
 --
 -- @param[type=Proxy] proxy a proxy object
 local function generate_fields(proxy)
-  local xml_data_str = introspect(proxy)
+  local xml_data_str, err = introspect(proxy)
 
   if not xml_data_str then
     error(
       string.format(
-        "Failed to introspect object '%s', XML data was %s",
-        proxy.name, xml_data_str
+        "Failed to introspect object '%s'\nerror: %s\ncode: %s",
+        proxy.name, err or "<unknown>", err.code or "<unknown>"
       )
     )
   end
