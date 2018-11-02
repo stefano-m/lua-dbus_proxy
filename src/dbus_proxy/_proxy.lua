@@ -105,6 +105,11 @@ proxy = p.Proxy:new(
 proxy:SomeMethod()
 proxy:SomeMethodWithArguments("hello", 123)
 proxy.SomeProperty
+
+local res, err =  proxy:SomeMethodWithError()
+if not res and err then
+    print("Error:", err)
+end
 ]]
 local Proxy = {}
 
