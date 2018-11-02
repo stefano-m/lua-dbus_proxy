@@ -224,6 +224,25 @@ describe("DBus Proxy objects", function ()
                 )
            end)
 
+           it("reports an error if a call fails", function ()
+                local errfn = function()
+                    Proxy:new(
+                    {
+                      bus = Bus.SESSION,
+                      name = "org.freedesktop.some.name",
+                      path= "/org/freedesktop/Some/Path",
+                      interface = "org.freedesktop.some.interface"
+                    }
+                  )
+                end
+
+                assert.has_error(errfn,
+                  "Failed to introspect object 'org.freedesktop.some.name'\n" ..
+                  "error: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: " ..
+                  "The name org.freedesktop.some.name was not provided by any .service files\n" ..
+                  "code: SERVICE_UNKNOWN")
+           end)
+
            it("can access properties", function ()
                 -- This is a bit hacky, but I don't
                 -- know how to make it better.
@@ -321,6 +340,7 @@ describe("DBus Proxy objects", function ()
                   "Invalid signal: NotValid")
 
            end)
+
 end)
 
 describe("Monitored proxy objects", function ()
