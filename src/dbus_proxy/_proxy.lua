@@ -55,6 +55,10 @@ properties](https://developer.gnome.org/gio/2.50/GDBusProxy.html#GDBusProxy.prop
 - `name_owner`: g-name-owner
 - `object_path`: g-object-path
 
+Some proxy methods may report errors (see the documentation of the object your
+are proxying). In that case you can check them with the usual error-checking
+pattern as shown in the usage example.
+
 For all this to work though, the code must run
 inside
 [GLib's main event loop](https://developer.gnome.org/glib/stable/glib-The-Main-Event-Loop.html#glib-The-Main-Event-Loop.description). This
@@ -103,14 +107,16 @@ proxy = p.Proxy:new(
                         path = "/com/example/objectPath"
                       }
                     )
-proxy:SomeMethod()
+res, err = proxy:SomeMethod()
+-- Check whether an error occurred.
+if not res and err then
+    print("Error:", err)
+    print("Error code:", err.code)
+end
+
 proxy:SomeMethodWithArguments("hello", 123)
 proxy.SomeProperty
 
-local res, err =  proxy:SomeMethodWithError()
-if not res and err then
-    print("Error:", err)
-end
 ]]
 local Proxy = {}
 
