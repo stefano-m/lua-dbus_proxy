@@ -71,6 +71,8 @@ from the root of the repository.
 
 # Installation
 
+## Luarocks
+
 You can install `dbus_proxy` with `luarocks` by running:
 
 ```shell
@@ -80,6 +82,10 @@ luarocks install dbus_proxy
 You may need to use the `--local` option if you can't or don't want to install
 the module at the system level.
 
+## NixOS
+
+If you are on NixOS, you can install this package from
+[nix-stefano-m-overlays](https://github.com/stefano-m/nix-stefano-m-nix-overlays).
 
 # Testing
 
