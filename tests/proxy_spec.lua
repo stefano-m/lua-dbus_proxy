@@ -447,4 +447,87 @@ describe("Monitored proxy objects", function ()
 
                 assert.is_true(proxy.is_connected)
            end)
+
+           it("will run the callback when disconnected", function ()
+
+                local name = "com.example.Test5"
+
+                local opts = {
+                  bus = Bus.SESSION,
+                  name = name,
+                  interface = name,
+                  path = "/com/example/Test5",
+                }
+
+                local DBUS_NAME_FLAG_REPLACE_EXISTING = 2
+                assert.equals(
+                  1,
+                  dbus:RequestName(name,
+                                   DBUS_NAME_FLAG_REPLACE_EXISTING)
+                )
+
+                assert.is_true(ctx:iteration(true))
+
+                local params = {}
+
+                local function callback(proxy, appeared)
+                    if not appeared then
+                        assert.is_false(proxy.is_connected)
+                    end
+                    params.proxy = proxy
+                    params.appeared = appeared
+                end
+
+                local proxy = monitored.new(opts, callback)
+
+                assert.is_true(ctx:iteration(true))
+
+                assert.equals(
+                  1,
+                  dbus:ReleaseName(name)
+                )
+
+                assert.is_true(ctx:iteration(true))
+
+                assert.equals(params.proxy, proxy)
+                assert.is_false(params.appeared)
+           end)
+
+        it("will run the callback when connected", function ()
+
+                local name = "com.example.Test6"
+
+                local opts = {
+                  bus = Bus.SESSION,
+                  name = name,
+                  interface = name,
+                  path = "/com/example/Test6",
+                }
+
+                local DBUS_NAME_FLAG_REPLACE_EXISTING = 2
+                assert.equals(
+                  1,
+                  dbus:RequestName(name,
+                                   DBUS_NAME_FLAG_REPLACE_EXISTING)
+                )
+
+                assert.is_true(ctx:iteration(true))
+
+                local params = {}
+
+                local function callback(proxy, appeared)
+                    if appeared then
+                        assert.is_true(proxy.is_connected)
+                    end
+                    params.proxy = proxy
+                    params.appeared = appeared
+                end
+
+                local proxy = monitored.new(opts, callback)
+
+                assert.is_true(ctx:iteration(true))
+
+                assert.equals(params.proxy, proxy)
+                assert.is_true(params.appeared)
+           end)
 end)

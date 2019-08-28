@@ -43,7 +43,7 @@ local function make_disconnected(name)
   return o
 end
 
-local function make_callbacks(managed)
+local function make_callbacks(managed, cb)
 
   local function name_appeared_callback()
     -- (bus, name, name_owner) passed as params, but we don't use them
@@ -51,6 +51,9 @@ local function make_callbacks(managed)
     rawset(managed, "is_connected", true)
     rawset(managed, "proxy", proxy_obj)
     setmetatable(managed, {__index = proxy_obj})
+    if cb then
+        cb(managed, true)
+    end
   end
 
   local function name_vanished_callback()
@@ -59,6 +62,9 @@ local function make_callbacks(managed)
     rawset(managed, "is_connected", false)
     rawset(managed, "proxy", proxy_obj)
     setmetatable(managed, {__index = proxy_obj})
+    if cb then
+        cb(managed, false)
+    end
   end
 
   return name_appeared_callback, name_vanished_callback
@@ -117,6 +123,9 @@ end
   watch the name (see also the [GBusNameWatcherFlags documentation on the GNOME
   website](https://developer.gnome.org/gio/stable/gio-Watching-Bus-Names.html#GBusNameWatcherFlags))
 
+  @tparam[opt] func cb A callback function called with two parameters:
+  the proxy object, and a boolean that is true when the DBus name
+  appears and false when it vanishes.
 
   @see Proxy:new
   @return a @{Proxy} object with extra properties:
@@ -125,8 +134,26 @@ end
     proxy is actually connected. It can be checked before calling methods or
     accessing other properties on the object to avoid errors.
 
+  @usage
+  p = require("dbus_proxy")
+  opts = {
+    bus = p.Bus.SYSTEM,
+    name = "com.example.BusName",
+    interface = "com.example.InterfaceName",
+    path = "/com/example/objectPath"
+  }
+  function callback(proxy, appeared)
+    if appeared then
+      -- proxy.is_connected is true
+      proxy:SomeMethod()
+    else
+      -- proxy.is_connected is false
+    end
+  end
+  proxy = p.monitored.new(opts, callback)
+
 ]]
-function monitored.new(opts)
+function monitored.new(opts, cb)
 
   validate_opts(opts)
 
@@ -138,7 +165,7 @@ function monitored.new(opts)
     _get_disconnected_proxy = function () return disconnected_proxy  end
   }
 
-  local name_appeared_callback, name_vanished_callback = make_callbacks(out)
+  local name_appeared_callback, name_vanished_callback = make_callbacks(out, cb)
 
   Gio.bus_watch_name_on_connection(
     opts.bus,
