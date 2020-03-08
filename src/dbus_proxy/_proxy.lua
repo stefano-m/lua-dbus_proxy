@@ -18,6 +18,7 @@
 ---  @submodule dbus_proxy
 local string = string
 local table = table
+local unpack = unpack or table.unpack -- luacheck: globals unpack
 
 local lgi = require("lgi")
 
@@ -379,7 +380,7 @@ function Proxy:connect_signal(callback, signal_name, sender_name)
 
     if signal == signal_name then
       params = variant.strip(params)
-      return callback(self, table.unpack(params))
+      return callback(self, unpack(params))
     end
   end
 

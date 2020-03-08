@@ -1,6 +1,7 @@
 -- Works with the 'busted' framework.
 -- http://olivinelabs.com/busted/
 local table = table
+local unpack = unpack or table.unpack -- luacheck: globals unpack
 require("busted")
 
 local GLib = require("lgi").GLib
@@ -316,7 +317,7 @@ describe("DBus Proxy objects", function ()
                 assert.is_true(called)
                 assert.equals(proxy, received_proxy)
                 assert.equals(3, #received_params)
-                local owned_name, old_owner, new_owner = table.unpack(received_params)
+                local owned_name, old_owner, new_owner = unpack(received_params)
                 assert.equals(bus_name, owned_name)
                 assert.equals('', old_owner)
                 assert.is_string(new_owner)
