@@ -6,6 +6,7 @@ env:
   global:
     - DISPLAY=fake
   matrix:
+    - LUA="luajit latest"
     - LUA="lua 5.2"
     - LUA="lua 5.3"
 
