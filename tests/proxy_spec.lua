@@ -342,6 +342,92 @@ describe("DBus Proxy objects", function ()
 
            end)
 
+           it("can call async methods", function ()
+                local dbus = Proxy:new(
+                  {
+                    bus = Bus.SESSION,
+                    name = "org.freedesktop.DBus",
+                    path= "/org/freedesktop/DBus",
+                    interface = "org.freedesktop.DBus"
+                  }
+                )
+
+                local ctx = GLib.MainLoop():get_context()
+                local name = "com.example.Test7"
+
+                local test_data = {
+                  called = false,
+                  has_owner = false,
+                  err = nil
+                }
+
+                local callback = function(_, user_data, result, err)
+                  user_data.called = true
+                  user_data.has_owner = result
+                  user_data.err = err
+                end
+
+                local DBUS_NAME_FLAG_REPLACE_EXISTING = 2
+                assert.equals(
+                  1,
+                  dbus:RequestName(name,
+                                   DBUS_NAME_FLAG_REPLACE_EXISTING)
+                )
+
+                assert.is_true(ctx:iteration(true))
+
+                dbus:NameHasOwnerAsync(callback, test_data, name)
+
+                assert.equals(false, test_data.called)
+                assert.equals(false, test_data.has_owner)
+
+                assert.is_true(ctx:iteration(true))
+
+                assert.equals(true, test_data.called)
+                assert.equals(true, test_data.has_owner)
+                assert.equals(nil, test_data.err)
+           end)
+
+           it("can get errors with async methods", function ()
+                local dbus = Proxy:new(
+                  {
+                    bus = Bus.SESSION,
+                    name = "org.freedesktop.DBus",
+                    path= "/org/freedesktop/DBus",
+                    interface = "org.freedesktop.DBus"
+                  }
+                )
+
+                local ctx = GLib.MainLoop():get_context()
+                local name = "org.freedesktop.DBus"
+                local test_data = {
+                  called = false,
+                  has_owner = false,
+                  err = nil
+                }
+
+                local callback = function(_, user_data, result, err)
+                  user_data.called = true
+                  user_data.has_owner = result
+                  user_data.err = err
+                end
+
+                local DBUS_NAME_FLAG_REPLACE_EXISTING = 2
+
+                dbus:RequestNameAsync(callback,
+                                      test_data,
+                                      name,
+                                      DBUS_NAME_FLAG_REPLACE_EXISTING)
+
+                assert.equals(false, test_data.called)
+                assert.equals(false, test_data.has_owner)
+
+                assert.is_true(ctx:iteration(true))
+
+                assert.equals(true, test_data.called)
+                assert.equals(nil, test_data.has_owner)
+                assert.equals("userdata", type(test_data.err))
+           end)
 end)
 
 describe("Monitored proxy objects", function ()
@@ -531,4 +617,5 @@ describe("Monitored proxy objects", function ()
                 assert.equals(params.proxy, proxy)
                 assert.is_true(params.appeared)
            end)
+
 end)
