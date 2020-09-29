@@ -118,6 +118,23 @@ end
 proxy:SomeMethodWithArguments("hello", 123)
 proxy.SomeProperty
 
+-- Asynchronous method calls are also supported, they have the "Async" suffix
+local function callback_fn(proxy, context, res, err)
+  if err ~= nil then
+    print("Error:", err)
+    print("Error code:", err.code)
+    return
+  end
+
+  print(context) -- prints "Something to pass as context"
+  print(res)
+end
+
+local anything = "Something to pass as context"
+some_proxy:SomeMethodWithArgumentsAsync(callback_fn, anything, "hello", 123)
+
+-- Do something else while waiting for the callback to be called with the result
+
 ]]
 local Proxy = {}
 
@@ -159,10 +176,9 @@ end
 --    }
 --
 local function call(proxy, interface, method, args)
-  local params = build_params(args)
   local out, err = proxy._proxy:call_sync(
     interface .. "." .. method,
-    params,
+    args,
     DBusCallFlags.NONE,
     _DEFAULT_TIMEOUT)
   if not out and err then
@@ -173,6 +189,45 @@ local function call(proxy, interface, method, args)
     result = result[1]
   end
   return result
+end
+
+--- Asynchronously call a method with arguments from a given interface on a proxy object.
+-- See [g_dbus_proxy_call](https://developer.gnome.org/gio/stable/GDBusProxy.html#g-dbus-proxy-call) and [g_dbus_proxy_call_finish](https://developer.gnome.org/gio/stable/GDBusProxy.html#g-dbus-proxy-call-finish)
+-- @param[type=Proxy] proxy a Proxy object
+-- @param[type=string] interface the interface name
+-- @param[type=string] method the method name
+-- @param[type=function] user_callback a callback to be called upon response receival
+-- @param[type=any] context context data, will be passed back on callback call
+-- @param[type=table] args an array of tables that have the `type` and `value` fields.
+-- For example
+--
+--    {
+--      {type = "s", value = "a string"},
+--      {type = "v", value = lgi.GLib.Variant("s", "a string variant")}
+--    }
+--
+local function call_async(proxy, interface, method, user_callback, context, args)
+  proxy._proxy:call(
+    interface .. "." .. method,
+    args,
+    DBusCallFlags.NONE,
+    _DEFAULT_TIMEOUT,
+    nil,
+    function(_proxy, res)
+      local out, err = _proxy:call_finish(res)
+
+      if not out and err then
+          user_callback(proxy, context, out, err)
+          return
+      end
+
+      local result = variant.strip(out)
+      if type(result) == "table" and #result == 1 then
+        result = result[1]
+      end
+
+      user_callback(proxy, context, result)
+    end)
 end
 
 --- Get a cached property out of a proxy object
@@ -204,6 +259,27 @@ local function introspect(proxy)
     "Introspect")
 end
 
+--- Build arguments for a method call
+-- @param[type=lgi.Gio.DBusMethodInfo] method the [method info object](https://developer.gnome.org/gio/stable/gio-D-Bus-Introspection-Data.html#GDBusMethodInfo-struct)
+-- @param[type=any] list of arguments in lua types
+local function build_args(method, ...)
+  local args = {}
+  for _, arg in ipairs(method.in_args) do
+    args[#args + 1] = {type = arg.signature}
+  end
+
+  assert(#{...} == #args,
+         string.format(
+           "Expected %d parameters but got %d",
+           #args, #{...}))
+
+  for idx, val in ipairs({...}) do
+    args[idx].value = val
+  end
+
+  return build_params(args)
+end
+
 --- Generate a method.
 -- @param[type=string] interface_name the interface name
 -- @param[type=lgi.Gio.DBusMethodInfo] method the [method info object](https://developer.gnome.org/gio/stable/gio-D-Bus-Introspection-Data.html#GDBusMethodInfo-struct)
@@ -211,25 +287,34 @@ end
 -- by passing the arguments as simple lua types.
 -- @see call
 local function generate_method(interface_name, method)
-  local args = {}
-  for _, arg in ipairs(method.in_args) do
-    args[#args + 1] = {type = arg.signature}
-  end
-
   return function (proxy, ...)
-    assert(#{...} == #args,
-           string.format(
-             "Expected %d parameters but got %d",
-             #args, #{...}))
-
-    for idx, val in ipairs({...}) do
-      args[idx].value = val
-    end
+    local args = build_args(method, ...)
 
     return call(
       proxy,
       interface_name,
       method.name,
+      args)
+  end
+
+end
+
+--- Generate an async method.
+-- @param[type=string] interface_name the interface name
+-- @param[type=lgi.Gio.DBusMethodInfo] method the [method info object](https://developer.gnome.org/gio/stable/gio-D-Bus-Introspection-Data.html#GDBusMethodInfo-struct)
+-- @return a function that wraps @{call_async} so the method can be called
+-- by passing the arguments as simple lua types.
+-- @see call
+local function generate_async_method(interface_name, method)
+  return function (proxy, user_callback, context, ...)
+    local args = build_args(method, ...)
+
+    return call_async(
+      proxy,
+      interface_name,
+      method.name,
+      user_callback,
+      context,
       args)
   end
 
@@ -297,10 +382,12 @@ local function generate_fields(proxy)
     for _, method in ipairs(iface.methods) do
       if not proxy[method.name] then
         proxy[method.name] = generate_method(iface.name, method)
+        proxy[method.name .. "Async"] = generate_async_method(iface.name, method)
       else
         -- override only if the interface name is the same as the proxy's
         if iface.name == proxy.interface then
           proxy[method.name] = generate_method(iface.name, method)
+          proxy[method.name .. "Async"] = generate_async_method(iface.name, method)
         end
       end
     end
