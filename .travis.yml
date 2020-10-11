@@ -3,7 +3,7 @@ version: ~> 1.0
 language: python
 
 os: linux
-dist: xenial
+dist: bionic
 
 env:
   global:
