@@ -1,6 +1,6 @@
 --[[
   Copyright 2017 Stefano Mazzucco
-  Copyright 2018 Stefano Mazzucco and contributors
+  Copyright 2018 - 2020 Stefano Mazzucco and contributors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -42,9 +42,9 @@ this it the convention in DBus (e.g. `proxy.SomeProperty` or
 `proxy:SomeMethod()`). Please refer to the documentation of the object you are
 proxying for more information.
 
-When a property in a DBus object
-changes, the same change is reflected in the proxy.  Similarly, when a signal
-is emitted, the proxy object is notified accordingly.
+When a property in a DBus object changes, the same change is reflected in the
+proxy.  Similarly, when a signal is emitted, the proxy object is notified
+accordingly.
 
 Additionally, the following fields reflect the corresponding [`g-*`
 properties](https://developer.gnome.org/gio/2.50/GDBusProxy.html#GDBusProxy.properties):
@@ -60,15 +60,13 @@ Some proxy methods may report errors (see the documentation of the object your
 are proxying). In that case you can check them with the usual error-checking
 pattern as shown in the usage example.
 
-For all this to work though, the code must run
-inside
-[GLib's main event loop](https://developer.gnome.org/glib/stable/glib-The-Main-Event-Loop.html#glib-The-Main-Event-Loop.description). This
+For all this to work though, the code must run inside [GLib's main event
+loop](https://developer.gnome.org/glib/stable/glib-The-Main-Event-Loop.html#glib-The-Main-Event-Loop.description). This
 can be achieved in two ways:
 
-1. Create
-   a
-   [main loop](https://developer.gnome.org/glib/stable/glib-The-Main-Event-Loop.html#GMainLoop) and
-   run it when the application starts:
+1. Create a
+   [main loop](https://developer.gnome.org/glib/stable/glib-The-Main-Event-Loop.html#GMainLoop)
+   and run it when the application starts:
 
 
            local GLib = require("lgi").GLib
@@ -97,17 +95,27 @@ can be achieved in two ways:
             print("something changed here too!")
           end
 
+--------
+
+  **NOTE**
+
+  If you use the Awesome Window Manager, the code will be already running
+  inside a main loop.
+
+--------
+
 @table Proxy
 @usage
 p = require("dbus_proxy")
 proxy = p.Proxy:new(
-                      {
-                        bus = p.Bus.SYSTEM,
-                        name = "com.example.BusName",
-                        interface = "com.example.InterfaceName",
-                        path = "/com/example/objectPath"
-                      }
-                    )
+    {
+      bus = p.Bus.SYSTEM,
+      name = "com.example.BusName",
+      interface = "com.example.InterfaceName",
+      path = "/com/example/objectPath"
+    }
+)
+
 res, err = proxy:SomeMethod()
 -- Check whether an error occurred.
 if not res and err then
@@ -118,22 +126,27 @@ end
 proxy:SomeMethodWithArguments("hello", 123)
 proxy.SomeProperty
 
--- Asynchronous method calls are also supported, they have the "Async" suffix
-local function callback_fn(proxy, context, res, err)
-  if err ~= nil then
-    print("Error:", err)
-    print("Error code:", err.code)
+-- Asynchronous method calls are also supported, they have the "Async"
+-- suffix. For example:
+
+local function callback_fn(proxy, context, success, failure)
+  if failure ~= nil then  -- error from the DBus Method
+    print("Error:", failure)
+    print("Error code:", failure.code)
+    -- add the data from the DBus method to the context
+    context.failure = failure
     return
   end
 
-  print(context) -- prints "Something to pass as context"
-  print(res)
+  -- add the data from the DBus method to the context
+  context.success = success
 end
 
-local anything = "Something to pass as context"
-some_proxy:SomeMethodWithArgumentsAsync(callback_fn, anything, "hello", 123)
+local my_context = {call_id = "my-id"}
+some_proxy:SomeMethodWithArgumentsAsync(callback_fn, my_context, "hello", 123)
 
--- Do something else while waiting for the callback to be called with the result
+-- Do something else while waiting for the callback to be called with the
+-- result
 
 ]]
 local Proxy = {}
@@ -147,7 +160,11 @@ local Proxy = {}
 --      {type = "v", value = lgi.GLib.Variant("s", "a string variant")}
 --    }
 --
--- @see call
+-- @return [lgi.GLib.Variant
+-- tuple](https://developer.gnome.org/glib/stable/glib-GVariant.html) or `nil`
+-- if no arguments are passed.
+--
+-- @see build_args
 local function build_params(args)
   if not args then
     return nil
@@ -167,14 +184,12 @@ end
 -- @param[type=Proxy] proxy a Proxy object
 -- @param[type=string] interface the interface name
 -- @param[type=string] method the method name
--- @param[type=table] args an array of tables that have the `type` and `value` fields.
--- For example
+-- @param[type=lgi.GLib.Variant] args [lgi.GLib.Variant
+-- tuple](https://developer.gnome.org/glib/stable/glib-GVariant.html) arguments
+-- to be passed to `method`
 --
---    {
---      {type = "s", value = "a string"},
---      {type = "v", value = lgi.GLib.Variant("s", "a string variant")}
---    }
---
+-- @see build_args
+-- @see generate_method
 local function call(proxy, interface, method, args)
   local out, err = proxy._proxy:call_sync(
     interface .. "." .. method,
@@ -192,20 +207,25 @@ local function call(proxy, interface, method, args)
 end
 
 --- Asynchronously call a method with arguments from a given interface on a proxy object.
--- See [g_dbus_proxy_call](https://developer.gnome.org/gio/stable/GDBusProxy.html#g-dbus-proxy-call) and [g_dbus_proxy_call_finish](https://developer.gnome.org/gio/stable/GDBusProxy.html#g-dbus-proxy-call-finish)
--- @param[type=Proxy] proxy a Proxy object
--- @param[type=string] interface the interface name
+-- Internally, it uses
+-- [g_dbus_proxy_call](https://developer.gnome.org/gio/stable/GDBusProxy.html#g-dbus-proxy-call)
+-- and
+-- [g_dbus_proxy_call_finish](https://developer.gnome.org/gio/stable/GDBusProxy.html#g-dbus-proxy-call-finish).
+-- @param[type=Proxy] proxy a Proxy object.
+-- @param[type=string] interface the interface name.
 -- @param[type=string] method the method name
--- @param[type=function] user_callback a callback to be called upon response receival
--- @param[type=any] context context data, will be passed back on callback call
--- @param[type=table] args an array of tables that have the `type` and `value` fields.
--- For example
+-- @param[type=function] user_callback callback function that accepts **four**
+-- arguments: `proxy` (the Proxy object), `context` arbitrary context data (see
+-- also the `context` parameter of this function), `success` (the data, if any,
+-- returned by the DBus method in case of success), `failure` (the data, if any,
+-- returned by the DBus method in case of failure)
+-- @param[type=any] context context data that will be passed to `user_callback`.
+-- @param[type=lgi.GLib.Variant] args [lgi.GLib.Variant
+-- tuple](https://developer.gnome.org/glib/stable/glib-GVariant.html) arguments
+-- to be passed to `method`
 --
---    {
---      {type = "s", value = "a string"},
---      {type = "v", value = lgi.GLib.Variant("s", "a string variant")}
---    }
---
+-- @see build_args
+-- @see generate_async_method
 local function call_async(proxy, interface, method, user_callback, context, args)
   proxy._proxy:call(
     interface .. "." .. method,
@@ -259,9 +279,18 @@ local function introspect(proxy)
     "Introspect")
 end
 
---- Build arguments for a method call
--- @param[type=lgi.Gio.DBusMethodInfo] method the [method info object](https://developer.gnome.org/gio/stable/gio-D-Bus-Introspection-Data.html#GDBusMethodInfo-struct)
--- @param[type=any] list of arguments in lua types
+--- Build arguments for a method call.
+-- @param[type=lgi.Gio.DBusMethodInfo] method the [method info
+-- object](https://developer.gnome.org/gio/stable/gio-D-Bus-Introspection-Data.html#GDBusMethodInfo-struct)
+-- @param[type=any] list of arguments as lua types
+--
+-- @return [lgi.GLib.Variant
+-- tuple](https://developer.gnome.org/glib/stable/glib-GVariant.html) or `nil`
+-- if no arguments are passed.
+--
+-- @see build_params
+-- @see generate_method
+-- @see generate_async_method
 local function build_args(method, ...)
   local args = {}
   for _, arg in ipairs(method.in_args) do
@@ -280,11 +309,13 @@ local function build_args(method, ...)
   return build_params(args)
 end
 
---- Generate a method.
+--- Generate a *synchronous* method.
 -- @param[type=string] interface_name the interface name
--- @param[type=lgi.Gio.DBusMethodInfo] method the [method info object](https://developer.gnome.org/gio/stable/gio-D-Bus-Introspection-Data.html#GDBusMethodInfo-struct)
--- @return a function that wraps @{call} so the method can be called
+-- @param[type=lgi.Gio.DBusMethodInfo] method the [method info
+-- object](https://developer.gnome.org/gio/stable/gio-D-Bus-Introspection-Data.html#GDBusMethodInfo-struct)
+-- @return a function that wraps @{build_args} and @{call} so the method can be called
 -- by passing the arguments as simple lua types.
+-- @see build_args
 -- @see call
 local function generate_method(interface_name, method)
   return function (proxy, ...)
@@ -299,12 +330,14 @@ local function generate_method(interface_name, method)
 
 end
 
---- Generate an async method.
+--- Generate an *asynchronous* method.
 -- @param[type=string] interface_name the interface name
--- @param[type=lgi.Gio.DBusMethodInfo] method the [method info object](https://developer.gnome.org/gio/stable/gio-D-Bus-Introspection-Data.html#GDBusMethodInfo-struct)
--- @return a function that wraps @{call_async} so the method can be called
+-- @param[type=lgi.Gio.DBusMethodInfo] method the [method info
+-- object](https://developer.gnome.org/gio/stable/gio-D-Bus-Introspection-Data.html#GDBusMethodInfo-struct)
+-- @return a function that wraps @{build_args} and @{call_async} so the method can be called
 -- by passing the arguments as simple lua types.
--- @see call
+-- @see build_args
+-- @see call_async
 local function generate_async_method(interface_name, method)
   return function (proxy, user_callback, context, ...)
     local args = build_args(method, ...)
@@ -321,10 +354,12 @@ local function generate_async_method(interface_name, method)
 end
 
 --- Generate the accessor table for a property
--- @param[type=lgi.Gio.DBusPropertyInfo] property the [property info object](https://developer.gnome.org/gio/stable/gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo-struct)
+-- @param[type=lgi.Gio.DBusPropertyInfo] property the [property info
+-- object](https://developer.gnome.org/gio/stable/gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo-struct)
 -- @return a table with the `getter` and `setter` fields that wrap
--- @{get_property} and @{set_property} respectively. If the property
--- is **not** readable or writeable, the functions will return an error.
+-- @{get_property} and @{set_property} respectively. If the property is **not**
+-- readable or writeable, the functions will return an error when attempting to
+-- read/write the property.
 -- @see get_property
 -- @see set_property
 local function generate_accessor(property)

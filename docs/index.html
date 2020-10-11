@@ -56,9 +56,9 @@
 </p>
     <h3>Info:</h3>
     <ul>
-        <li><strong>Copyright</strong>: 2017 Stefano Mazzucco</li>
+        <li><strong>Copyright</strong>: (2017) Stefano Mazzucco,(2018 - 2020) Stefano Mazzucco and contributors</li>
         <li><strong>License</strong>: Apache License, version 2.0</li>
-        <li><strong>Author</strong>: Stefano Mazzucco <stefano AT curso DOT re></li>
+        <li><strong>Author</strong>: Stefano Mazzucco <stefano AT curso DOT re> and contributors</li>
     </ul>
 
 
@@ -69,6 +69,50 @@
 	<td class="summary">A proxy object</p>
 
 <p>Proxy objects act as intermediares between your lua code and DBus.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#build_params">build_params (args)</a></td>
+	<td class="summary">Build a lgi.GLib.Variant tuple that can be used to call a method</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#call">call (proxy, interface, method, args)</a></td>
+	<td class="summary">Synchronously call a method with arguments from a given interface on a proxy object.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#call_async">call_async (proxy, interface, method, user_callback, context, args)</a></td>
+	<td class="summary">Asynchronously call a method with arguments from a given interface on a proxy object.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#get_property">get_property (proxy, name)</a></td>
+	<td class="summary">Get a cached property out of a proxy object</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#set_property">set_property (proxy, name, opts)</a></td>
+	<td class="summary">Set a cached property of a proxy object</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#introspect">introspect (proxy)</a></td>
+	<td class="summary">Get the XML representation of a proxy object</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#build_args">build_args (method, list)</a></td>
+	<td class="summary">Build arguments for a method call.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#generate_method">generate_method (interface_name, method)</a></td>
+	<td class="summary">Generate a <em>synchronous</em> method.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#generate_async_method">generate_async_method (interface_name, method)</a></td>
+	<td class="summary">Generate an <em>asynchronous</em> method.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#generate_accessor">generate_accessor (property)</a></td>
+	<td class="summary">Generate the accessor table for a property</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#generate_fields">generate_fields (proxy)</a></td>
+	<td class="summary">Generate the fields of a proxy object.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Proxy:connect_signal">Proxy:connect_signal (callback, signal_name[, sender_name])</a></td>
@@ -127,9 +171,9 @@ this it the convention in DBus (e.g. <code>proxy.SomeProperty</code> or
 <code>proxy:SomeMethod()</code>). Please refer to the documentation of the object you are
 proxying for more information.</p>
 
-<p>When a property in a DBus object
-changes, the same change is reflected in the proxy.  Similarly, when a signal
-is emitted, the proxy object is notified accordingly.</p>
+<p>When a property in a DBus object changes, the same change is reflected in the
+proxy.  Similarly, when a signal is emitted, the proxy object is notified
+accordingly.</p>
 
 <p>Additionally, the following fields reflect the corresponding <a href="https://developer.gnome.org/gio/2.50/GDBusProxy.html#GDBusProxy.properties"><code>g-*</code>
 properties</a>:</p>
@@ -147,16 +191,14 @@ properties</a>:</p>
 are proxying). In that case you can check them with the usual error-checking
 pattern as shown in the usage example.</p>
 
-<p>For all this to work though, the code must run
-inside
-<a href="https://developer.gnome.org/glib/stable/glib-The-Main-Event-Loop.html#glib-The-Main-Event-Loop.description">GLib's main event loop</a>. This
+<p>For all this to work though, the code must run inside <a href="https://developer.gnome.org/glib/stable/glib-The-Main-Event-Loop.html#glib-The-Main-Event-Loop.description">GLib's main event
+loop</a>. This
 can be achieved in two ways:</p>
 
 <ol>
-    <li><p>Create
-a
-<a href="https://developer.gnome.org/glib/stable/glib-The-Main-Event-Loop.html#GMainLoop">main loop</a> and
-run it when the application starts:</p>
+    <li><p>Create a
+<a href="https://developer.gnome.org/glib/stable/glib-The-Main-Event-Loop.html#GMainLoop">main loop</a>
+and run it when the application starts:</p>
 
 
 <pre><code>   local GLib = require("lgi").GLib
@@ -186,6 +228,15 @@ this is particularly useful when you want to integrate your code with an
 </code></pre></li>
 </ol>
 
+<hr/>
+
+<p>  <strong>NOTE</strong></p>
+
+<p>  If you use the Awesome Window Manager, the code will be already running
+  inside a main loop.</p>
+
+<hr/>
+
 
 
 
@@ -197,13 +248,14 @@ this is particularly useful when you want to integrate your code with an
     <ul>
         <pre class="example">p = <span class="global">require</span>(<span class="string">"dbus_proxy"</span>)
 proxy = p.Proxy:new(
-                      {
-                        bus = p.Bus.SYSTEM,
-                        name = <span class="string">"com.example.BusName"</span>,
-                        interface = <span class="string">"com.example.InterfaceName"</span>,
-                        path = <span class="string">"/com/example/objectPath"</span>
-                      }
-                    )
+    {
+      bus = p.Bus.SYSTEM,
+      name = <span class="string">"com.example.BusName"</span>,
+      interface = <span class="string">"com.example.InterfaceName"</span>,
+      path = <span class="string">"/com/example/objectPath"</span>
+    }
+)
+
 res, err = proxy:SomeMethod()
 <span class="comment">-- Check whether an error occurred.
 </span><span class="keyword">if</span> <span class="keyword">not</span> res <span class="keyword">and</span> err <span class="keyword">then</span>
@@ -214,23 +266,425 @@ res, err = proxy:SomeMethod()
 proxy:SomeMethodWithArguments(<span class="string">"hello"</span>, <span class="number">123</span>)
 proxy.SomeProperty
 
-<span class="comment">-- Asynchronous method calls are also supported, they have the "Async" suffix
-</span><span class="keyword">local</span> <span class="keyword">function</span> callback_fn(proxy, user_data, res, err)
-  <span class="keyword">if</span> err ~= <span class="keyword">nil</span> <span class="keyword">then</span>
-    <span class="global">print</span>(<span class="string">"Error:"</span>, err)
-    <span class="global">print</span>(<span class="string">"Error code:"</span>, err.code)
+<span class="comment">-- Asynchronous method calls are also supported, they have the "Async"
+</span><span class="comment">-- suffix. For example:
+</span>
+<span class="keyword">local</span> <span class="keyword">function</span> callback_fn(proxy, context, success, failure)
+  <span class="keyword">if</span> failure ~= <span class="keyword">nil</span> <span class="keyword">then</span>  <span class="comment">-- error from the DBus Method
+</span>    <span class="global">print</span>(<span class="string">"Error:"</span>, failure)
+    <span class="global">print</span>(<span class="string">"Error code:"</span>, failure.code)
+    <span class="comment">-- add the data from the DBus method to the context
+</span>    context.failure = failure
     <span class="keyword">return</span>
   <span class="keyword">end</span>
 
-  <span class="global">print</span>(user_data) <span class="comment">-- prints "Something to pass as user_data"
-</span>  <span class="global">print</span>(res)
+  <span class="comment">-- add the data from the DBus method to the context
+</span>  context.success = success
 <span class="keyword">end</span>
 
-<span class="keyword">local</span> anything = <span class="string">"Something to pass as user_data"</span>
-some_proxy:SomeMethodWithArgumentsAsync(callback_fn, anything, <span class="string">"hello"</span>, <span class="number">123</span>)
+<span class="keyword">local</span> my_context = {call_id = <span class="string">"my-id"</span>}
+some_proxy:SomeMethodWithArgumentsAsync(callback_fn, my_context, <span class="string">"hello"</span>, <span class="number">123</span>)
 
-<span class="comment">-- Do something else while waiting for the callback to be called with the result</span></pre>
+<span class="comment">-- Do something else while waiting for the callback to be called with the
+</span><span class="comment">-- result</span></pre>
     </ul>
+
+</dd>
+    <dt>
+    <a name = "build_params"></a>
+    <strong>build_params (args)</strong>
+    </dt>
+    <dd>
+    Build a lgi.GLib.Variant tuple that can be used to call a method
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">args</span>
+
+<p>[type=table] an array of tables that have the <code>type</code> and <code>value</code> fields.
+ For example</p>
+
+<pre><code>{
+  {type = "s", value = "a string"},
+  {type = "v", value = lgi.GLib.Variant("s", "a string variant")}
+}
+</code></pre>
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+         <a href="https://developer.gnome.org/glib/stable/glib-GVariant.html">lgi.GLib.Variant
+ tuple</a> or <code>nil</code>
+ if no arguments are passed.
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="index.html#build_args">build_args</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "call"></a>
+    <strong>call (proxy, interface, method, args)</strong>
+    </dt>
+    <dd>
+    Synchronously call a method with arguments from a given interface on a proxy object.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">proxy</span>
+            <span class="types"><a class="type" href="index.html#Proxy">Proxy</a></span>
+         a Proxy object
+        </li>
+        <li><span class="parameter">interface</span>
+            <span class="types"><span class="type">string</span></span>
+         the interface name
+        </li>
+        <li><span class="parameter">method</span>
+            <span class="types"><span class="type">string</span></span>
+         the method name
+        </li>
+        <li><span class="parameter">args</span>
+            <span class="types"><span class="type">lgi.GLib.Variant</span></span>
+         <a href="https://developer.gnome.org/glib/stable/glib-GVariant.html">lgi.GLib.Variant
+ tuple</a> arguments
+ to be passed to <code>method</code>
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="index.html#build_args">build_args</a></li>
+         <li><a href="index.html#generate_method">generate_method</a></li>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "call_async"></a>
+    <strong>call_async (proxy, interface, method, user_callback, context, args)</strong>
+    </dt>
+    <dd>
+    Asynchronously call a method with arguments from a given interface on a proxy object.
+ Internally, it uses
+ <a href="https://developer.gnome.org/gio/stable/GDBusProxy.html#g-dbus-proxy-call">g<em>dbus</em>proxy<em>call</a>
+ and
+ <a href="https://developer.gnome.org/gio/stable/GDBusProxy.html#g-dbus-proxy-call-finish">g</em>dbus<em>proxy</em>call_finish</a>.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">proxy</span>
+            <span class="types"><a class="type" href="index.html#Proxy">Proxy</a></span>
+         a Proxy object.
+        </li>
+        <li><span class="parameter">interface</span>
+            <span class="types"><span class="type">string</span></span>
+         the interface name.
+        </li>
+        <li><span class="parameter">method</span>
+            <span class="types"><span class="type">string</span></span>
+         the method name
+        </li>
+        <li><span class="parameter">user_callback</span>
+            <span class="types"><span class="type">function</span></span>
+         callback function that accepts <strong>four</strong>
+ arguments: <code>proxy</code> (the Proxy object), <code>context</code> arbitrary context data (see
+ also the <code>context</code> parameter of this function), <code>success</code> (the data, if any,
+ returned by the DBus method in case of success), <code>failure</code> (the data, if any,
+ returned by the DBus method in case of failure)
+        </li>
+        <li><span class="parameter">context</span>
+            <span class="types"><span class="type">any</span></span>
+         context data that will be passed to <code>user_callback</code>.
+        </li>
+        <li><span class="parameter">args</span>
+            <span class="types"><span class="type">lgi.GLib.Variant</span></span>
+         <a href="https://developer.gnome.org/glib/stable/glib-GVariant.html">lgi.GLib.Variant
+ tuple</a> arguments
+ to be passed to <code>method</code>
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="index.html#build_args">build_args</a></li>
+         <li><a href="index.html#generate_async_method">generate_async_method</a></li>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "get_property"></a>
+    <strong>get_property (proxy, name)</strong>
+    </dt>
+    <dd>
+    Get a cached property out of a proxy object
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">proxy</span>
+            <span class="types"><a class="type" href="index.html#Proxy">Proxy</a></span>
+         a proxy object
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+         the name of the property
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        the value of the property
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "set_property"></a>
+    <strong>set_property (proxy, name, opts)</strong>
+    </dt>
+    <dd>
+    Set a cached property of a proxy object
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">proxy</span>
+            <span class="types"><a class="type" href="index.html#Proxy">Proxy</a></span>
+         a proxy object
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><span class="type">string</span></span>
+         the name of the property
+        </li>
+        <li><span class="parameter">opts</span>
+            <span class="types"><span class="type">table</span></span>
+         containing the following attributes: <br>
+ -  <code>value</code> the value to be set <br>
+ -  <code>signature</code> the DBus signature as a string
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "introspect"></a>
+    <strong>introspect (proxy)</strong>
+    </dt>
+    <dd>
+    Get the XML representation of a proxy object
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">proxy</span>
+            <span class="types"><a class="type" href="index.html#Proxy">Proxy</a></span>
+         a proxy object
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a string with the XML representation of the object
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "build_args"></a>
+    <strong>build_args (method, list)</strong>
+    </dt>
+    <dd>
+    Build arguments for a method call.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">method</span>
+            <span class="types"><span class="type">lgi.Gio.DBusMethodInfo</span></span>
+         the <a href="https://developer.gnome.org/gio/stable/gio-D-Bus-Introspection-Data.html#GDBusMethodInfo-struct">method info
+ object</a>
+        </li>
+        <li><span class="parameter">list</span>
+            <span class="types"><span class="type">any</span></span>
+         of arguments as lua types
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+         <a href="https://developer.gnome.org/glib/stable/glib-GVariant.html">lgi.GLib.Variant
+ tuple</a> or <code>nil</code>
+ if no arguments are passed.
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="index.html#build_params">build_params</a></li>
+         <li><a href="index.html#generate_method">generate_method</a></li>
+         <li><a href="index.html#generate_async_method">generate_async_method</a></li>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "generate_method"></a>
+    <strong>generate_method (interface_name, method)</strong>
+    </dt>
+    <dd>
+    Generate a <em>synchronous</em> method.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">interface_name</span>
+            <span class="types"><span class="type">string</span></span>
+         the interface name
+        </li>
+        <li><span class="parameter">method</span>
+            <span class="types"><span class="type">lgi.Gio.DBusMethodInfo</span></span>
+         the <a href="https://developer.gnome.org/gio/stable/gio-D-Bus-Introspection-Data.html#GDBusMethodInfo-struct">method info
+ object</a>
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a function that wraps <a href="index.html#build_args">build_args</a> and <a href="index.html#call">call</a> so the method can be called
+ by passing the arguments as simple lua types.
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="index.html#build_args">build_args</a></li>
+         <li><a href="index.html#call">call</a></li>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "generate_async_method"></a>
+    <strong>generate_async_method (interface_name, method)</strong>
+    </dt>
+    <dd>
+    Generate an <em>asynchronous</em> method.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">interface_name</span>
+            <span class="types"><span class="type">string</span></span>
+         the interface name
+        </li>
+        <li><span class="parameter">method</span>
+            <span class="types"><span class="type">lgi.Gio.DBusMethodInfo</span></span>
+         the <a href="https://developer.gnome.org/gio/stable/gio-D-Bus-Introspection-Data.html#GDBusMethodInfo-struct">method info
+ object</a>
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        a function that wraps <a href="index.html#build_args">build_args</a> and <a href="index.html#call_async">call_async</a> so the method can be called
+ by passing the arguments as simple lua types.
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="index.html#build_args">build_args</a></li>
+         <li><a href="index.html#call_async">call_async</a></li>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "generate_accessor"></a>
+    <strong>generate_accessor (property)</strong>
+    </dt>
+    <dd>
+    Generate the accessor table for a property
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">property</span>
+            <span class="types"><span class="type">lgi.Gio.DBusPropertyInfo</span></span>
+         the <a href="https://developer.gnome.org/gio/stable/gio-D-Bus-Introspection-Data.html#GDBusPropertyInfo-struct">property info
+ object</a>
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+         a table with the <code>getter</code> and <code>setter</code> fields that wrap
+ <a href="index.html#get_property">get_property</a> and <a href="index.html#set_property">set_property</a> respectively. If the property is <strong>not</strong>
+ readable or writeable, the functions will return an error when attempting to
+ read/write the property.
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="index.html#get_property">get_property</a></li>
+         <li><a href="index.html#set_property">set_property</a></li>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "generate_fields"></a>
+    <strong>generate_fields (proxy)</strong>
+    </dt>
+    <dd>
+    Generate the fields of a proxy object. </p>
+
+<p> This function will attach properties, methods and signals to the proxy
+ object. To be used during initialization.  <strong>NOTE</strong> This function will
+ <strong>not</strong> generate fields for nested nodes, if any.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">proxy</span>
+            <span class="types"><a class="type" href="index.html#Proxy">Proxy</a></span>
+         a proxy object
+        </li>
+    </ul>
+
+
+
+
 
 </dd>
     <dt>
@@ -569,7 +1023,7 @@ proxy = p.monitored.new(opts, callback)</pre>
 </div> <!-- id="main" -->
 <div id="about">
 <i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
-<i style="float:right;">Last updated 2020-10-05 18:15:45 </i>
+<i style="float:right;">Last updated 1970-01-01 00:00:01 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>

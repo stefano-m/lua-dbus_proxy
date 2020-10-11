@@ -17,13 +17,13 @@ Creating a proxy object is as easy as doing
 ```lua
 p = require("dbus_proxy")
 proxy = p.Proxy:new(
-                      {
-                        bus = p.Bus.SYSTEM,
-                        name = "com.example.BusName",
-                        interface = "com.example.InterfaceName",
-                        path = "/com/example/objectPath"
-                      }
-                    )
+  {
+    bus = p.Bus.SYSTEM,
+    name = "com.example.BusName",
+    interface = "com.example.InterfaceName",
+    path = "/com/example/objectPath"
+  }
+)
 ```
 
 At this point, all the properties, methods and signals of the object are
@@ -150,3 +150,13 @@ can be achieved in two ways:
      print("something changed here too!")
    end
 ```
+
+
+--------
+
+  **NOTE**
+
+  If you use the [Awesome Window Manager](https://awesomewm.org/), the code
+  will be already running inside a main loop.
+
+--------
