@@ -359,7 +359,7 @@ describe("DBus Proxy objects", function ()
                 local test_data = {
                   called = false,
                   has_owner = false,
-                  err = nil
+                  err = false
                 }
 
                 local callback = function(_, user_data, result, err)
