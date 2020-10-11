@@ -13,6 +13,9 @@ local Proxy = p.Proxy
 local variant = p.variant
 local monitored = p.monitored
 
+-- See dbus-shared.h
+local DBUS_NAME_FLAG_REPLACE_EXISTING = 2
+
 describe("The Bus table", function ()
            it("does not allow to set values", function ()
                 assert.has_error(function ()
@@ -186,6 +189,7 @@ end)
 
 
 describe("DBus Proxy objects", function ()
+
            it("can be created", function ()
 
                 local proxy = Proxy:new(
@@ -216,8 +220,6 @@ describe("DBus Proxy objects", function ()
                   function () proxy:Hello("wrong") end,
                   "Expected 0 parameters but got 1")
 
-                -- See dbus-shared.h
-                local DBUS_NAME_FLAG_REPLACE_EXISTING = 2
                 assert.equals(
                   1,
                   proxy:RequestName("com.example.Test1",
@@ -302,8 +304,7 @@ describe("DBus Proxy objects", function ()
                 proxy:connect_signal(callback, signal_name, sender_name)
 
                 local bus_name = "com.example.Test2"
-                -- See dbus-shared.h
-                local DBUS_NAME_FLAG_REPLACE_EXISTING = 2
+
                 assert.equals(
                   1,
                   proxy:RequestName(bus_name,
@@ -367,7 +368,6 @@ describe("DBus Proxy objects", function ()
                   user_data.err = err
                 end
 
-                local DBUS_NAME_FLAG_REPLACE_EXISTING = 2
                 assert.equals(
                   1,
                   dbus:RequestName(name,
@@ -411,8 +411,6 @@ describe("DBus Proxy objects", function ()
                   user_data.has_owner = result
                   user_data.err = err
                 end
-
-                local DBUS_NAME_FLAG_REPLACE_EXISTING = 2
 
                 dbus:RequestNameAsync(callback,
                                       test_data,
@@ -478,7 +476,6 @@ describe("Monitored proxy objects", function ()
                   path = "/com/example/Test3"
                 }
 
-                local DBUS_NAME_FLAG_REPLACE_EXISTING = 2
                 assert.equals(
                   1,
                   dbus:RequestName(name,
@@ -518,8 +515,6 @@ describe("Monitored proxy objects", function ()
                   path = "/com/example/Test4",
                 }
 
-                -- See dbus-shared.h
-                local DBUS_NAME_FLAG_REPLACE_EXISTING = 2
                 assert.equals(
                   1,
                   dbus:RequestName(bus_name,
@@ -546,7 +541,6 @@ describe("Monitored proxy objects", function ()
                   path = "/com/example/Test5",
                 }
 
-                local DBUS_NAME_FLAG_REPLACE_EXISTING = 2
                 assert.equals(
                   1,
                   dbus:RequestName(name,
@@ -591,7 +585,6 @@ describe("Monitored proxy objects", function ()
                   path = "/com/example/Test6",
                 }
 
-                local DBUS_NAME_FLAG_REPLACE_EXISTING = 2
                 assert.equals(
                   1,
                   dbus:RequestName(name,
