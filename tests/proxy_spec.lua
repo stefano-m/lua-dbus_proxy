@@ -247,31 +247,22 @@ describe("DBus Proxy objects", function ()
            end)
 
            it("can access properties", function ()
-                -- This is a bit hacky, but I don't
-                -- know how to make it better.
-                local inside_ci = os.getenv("CI")
-                if inside_ci == "true" then
-                  print("Inside CI: Skipping test that requires UPower")
-                else
-
-                  local device = Proxy:new(
+                 local proxy = Proxy:new(
                     {
-                      bus = Bus.SYSTEM,
-                      name = "org.freedesktop.UPower",
-                      interface = "org.freedesktop.UPower.Device",
-                      path =
-                        "/org/freedesktop/UPower/devices/battery_BAT0"
+                       bus = Bus.SESSION,
+                       name = "org.freedesktop.DBus",
+                       path= "/org/freedesktop/DBus",
+                       interface = "org.freedesktop.DBus"
                     }
-                  )
+                 )
 
-                  assert.is_number(device.Percentage)
-                  assert.is_true(device.IsPresent)
-                  assert.is_string(device.Model)
+                 -- https://dbus.freedesktop.org/doc/dbus-specification.html#message-bus-properties
+                 assert.is_table(proxy.Features)
+                 assert.is_table(proxy.Interfaces)
 
-                  assert.has_error(
-                    function () device.Percentage = 1 end,
-                    "Property 'Percentage' is not writable")
-                end
+                 assert.has_error(
+                    function () proxy.Features = 1 end,
+                    "Property 'Features' is not writable")
            end)
 
            it("can handle signals", function ()
