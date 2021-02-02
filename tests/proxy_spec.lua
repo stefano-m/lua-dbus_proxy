@@ -40,13 +40,9 @@ describe("The Bus table", function ()
 
            it("can get the bus from an address", function ()
                 local address = os.getenv("DBUS_SESSION_BUS_ADDRESS")
-                if address then
-                  local bus = Bus[address]
-                  assert.equals("userdata", type(bus))
-                  assert.equals("Gio.DBusConnection", bus._name)
-                else
-                  print("Address not found. Test skipped.")
-                end
+                local bus = Bus[address]
+                assert.equals("userdata", type(bus))
+                assert.equals("Gio.DBusConnection", bus._name)
            end)
 end)
 
