@@ -436,6 +436,19 @@ local function generate_fields(proxy)
     end
 
   end
+
+  for k, _ in pairs(proxy) do
+    if proxy.accessors[k] ~= nil then
+      -- A property with the same name as a method was found, rename it by
+      -- adding an underscore and remove the original, but bail out silently in
+      -- the unlikely case that the name exists too.
+      local new_name = '_' .. k
+      if proxy.accessors[new_name] == nil then
+        proxy.accessors[new_name], proxy.accessors[k] = proxy.accessors[k], nil
+      end
+    end
+  end
+
 end
 
 local meta = {
@@ -583,10 +596,10 @@ function Proxy:new(opts)
   o.name_owner = proxy.g_name_owner
   o.object_path = proxy.g_object_path
 
+  generate_fields(o)
+
   setmetatable(o, meta)
   self.__index = self
-
-  generate_fields(o)
 
   return o
 end

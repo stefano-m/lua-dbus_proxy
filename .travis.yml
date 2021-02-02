@@ -39,8 +39,8 @@ before_script:
 
 script:
   - luacheck .
-  - busted .
-  - busted --coverage .
+  - busted --exclude-tags=skipci .
+  - busted --exclude-tags=skipci --coverage .
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

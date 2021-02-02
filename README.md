@@ -18,7 +18,7 @@ Creating a proxy object is as easy as doing
 p = require("dbus_proxy")
 proxy = p.Proxy:new(
   {
-    bus = p.Bus.SYSTEM,
+    bus = p.Bus.SYSTEM, -- or p.Bus.SESSION
     name = "com.example.BusName",
     interface = "com.example.InterfaceName",
     path = "/com/example/objectPath"
@@ -32,11 +32,39 @@ will likely be written in `CamelCase` since this it the convention in DBus
 (e.g. `proxy.SomeProperty` or `proxy:SomeMethod()`). Please refer to the
 documentation of the object you are proxying for more information.
 
-The code has been developed on a Parabola GNU/Linux OS using:
+-----
 
-* lua 5.3
-* lgi 0.9.1
-* glib 2.50.3
+**NOTE**
+
+*If* a property has the same name as a *method*, as e.g. it happens with
+`org.freedesktop.systemd1.Unit` in the case of `Restart`, an *underscore* will
+be added to it.
+
+For example:
+
+``` lua
+local p = require("dbus_proxy")
+
+local proxy = p.Proxy:new(
+  {
+    bus = p.Bus.SESSION,
+    name = "org.freedesktop.systemd1",
+    interface = "org.freedesktop.systemd1.Unit",
+    path = "/org/freedesktop/systemd1/unit/redshift_2eservice"
+  }
+)
+
+-- https://github.com/systemd/systemd/blob/v246/src/core/job.c#L1623
+local job_mode = "replace"
+ok, err = proxy:Restart(_job_mode)
+assert(ok, tostring(err))
+print(ok) -- e.g. "/org/freedesktop/systemd1/job/123"
+
+restart_property = proxy._Restart
+-- same as: proxy.accessors._Restart.getter(proxy)
+```
+
+-----
 
 The code is released under the Apache License Version 2.0, see the LICENSE file
 for full information.
@@ -90,7 +118,12 @@ If you are on NixOS, you can install this package from
 # Testing
 
 To test the code, you need to install
-the [busted](http://olivinelabs.com/busted/) framework.  Then run `busted .`
+the [busted](http://olivinelabs.com/busted/) framework.  Then run
+
+``` sh
+busted .
+```
+
 (node the dot!) from the root of the repository to run the tests.
 
 The tests depend on a number of DBus interfaces being available on the

@@ -1,6 +1,7 @@
 -- Works with the 'busted' framework.
 -- http://olivinelabs.com/busted/
 local table = table
+local os = os
 local unpack = unpack or table.unpack -- luacheck: globals unpack
 require("busted")
 
@@ -417,6 +418,37 @@ describe("DBus Proxy objects", function ()
                 assert.equals(nil, test_data.has_owner)
                 assert.equals("userdata", type(test_data.err))
            end)
+
+           it("can deal with methods and properties with the same name #skipci",
+              -- TODO: how can I make it work in CI?
+              function ()
+
+                 local proxy = Proxy:new(
+                    {
+                       bus = Bus.SESSION,
+                       name = "org.freedesktop.systemd1",
+                       interface = "org.freedesktop.systemd1.Unit",
+                       path = "/org/freedesktop/systemd1/unit/redshift_2eservice"
+                    }
+                 )
+
+
+                 assert.is_function(proxy.Restart)
+                 assert.is_table(proxy.accessors._Restart)
+
+                 local spy_getter = spy.on(proxy.accessors._Restart, "getter")
+
+                 assert.is_nil(proxy._Restart) -- actual value of the property
+
+                 assert.spy(spy_getter).was.called()
+
+                 assert.has_error(function ()
+                       proxy._Restart = 1
+                 end, "Property 'Restart' is not writable")
+
+
+           end)
+
 end)
 
 describe("Monitored proxy objects", function ()
