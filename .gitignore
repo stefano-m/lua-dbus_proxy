@@ -1,3 +1,7 @@
+# nixpkgs
+result*
+.direnv/
+
 # Compiled Lua sources
 luac.out
 
