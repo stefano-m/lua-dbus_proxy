@@ -12,7 +12,10 @@
         buildLuaPackage rec {
           name = "${pname}-${version}";
           pname = "dbus_proxy";
-          version = "${self.lastModifiedDate}-${self.shortRev or "dev"}";
+          # FIXME: add a Makefile or something so that 'make release' generates
+          # the version, adds a tag and commits. Then we can read the version
+          # with builtins.reafFile (beware of newlines!)
+          version = "v0.10.0-${self.shortRev or "dev"}";
 
           src = ./.;
 
