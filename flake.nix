@@ -94,13 +94,12 @@
 
       };
 
-
     in
     {
-      defaultPackage.x86_64-linux = buildPackage flakePkgs.lua52Packages;
+      defaultPackage.x86_64-linux = self.packages.x86_64-linux.lua52_dbus_proxy;
 
       packages.x86_64-linux = {
-        lua52_dbus_proxy = self.defaultPackage.x86_64-linux;
+        lua52_dbus_proxy = buildPackage flakePkgs.lua52Packages;
         lua53_dbus_proxy = buildPackage flakePkgs.lua53Packages;
         luajit_dbus_proxy = buildPackage flakePkgs.luajitPackages;
       };
