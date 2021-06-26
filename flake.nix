@@ -136,10 +136,6 @@
         ]);
       };
 
-      # https://nixos.org/manual/nixos/stable/index.html#sec-running-nixos-tests-interactively
-      # nix build '.#checks.x86_64-linux.<name>.driverInteractive'
-      # ./result/bin/nixos-run-vms # to start the VM
-      # ./result/bin/nixos-test-driver # to start the Pyton test shell
       checks.x86_64-linux = {
         lua52Check = makeCheck flakePkgs.lua5_2;
         lua53Check = makeCheck flakePkgs.lua5_3;
