@@ -32,14 +32,16 @@
 
         };
 
-      makeCheck = packageToTest: lua: flakePkgs.nixosTest {
-        name = "test-${packageToTest.name}";
+      makeCheck = lua: flakePkgs.nixosTest {
+        name = lua.pkgs.dbus_proxy.name;
         nodes.machine = { pkgs, lib, ... }: {
 
           virtualisation.writableStore = true;
           nix.binaryCaches = lib.mkForce [ ]; # no network
 
           nixpkgs.overlays = [
+
+            self.overlay
 
             (this: super: {
 
@@ -52,8 +54,8 @@
               };
 
               dbus_proxy_app = lua.withPackages (ps: [
-                packageToTest
-              ] ++ packageToTest.buildInputs);
+                ps.dbus_proxy
+              ] ++ lua.pkgs.dbus_proxy.buildInputs);
             })
 
           ];
@@ -136,9 +138,9 @@
       # ./result/bin/nixos-run-vms # to start the VM
       # ./result/bin/nixos-test-driver # to start the Pyton test shell
       checks.x86_64-linux = {
-        lua52Check = makeCheck self.packages.x86_64-linux.lua52_dbus_proxy flakePkgs.lua5_2;
-        lua53Check = makeCheck self.packages.x86_64-linux.lua53_dbus_proxy flakePkgs.lua5_3;
-        luajitCheck = makeCheck self.packages.x86_64-linux.luajit_dbus_proxy flakePkgs.luajit;
+        lua52Check = makeCheck flakePkgs.lua5_2;
+        lua53Check = makeCheck flakePkgs.lua5_3;
+        luajitCheck = makeCheck flakePkgs.luajit;
       };
 
     };
