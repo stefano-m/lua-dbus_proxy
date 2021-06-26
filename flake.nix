@@ -101,15 +101,22 @@
 
     in
     {
-      defaultPackage.x86_64-linux = self.packages.x86_64-linux.lua52_dbus_proxy;
+      defaultPackage.x86_64-linux = self.packages.x86_64-linux.lua_dbus_proxy;
 
       packages.x86_64-linux = {
+        lua_dbus_proxy = buildPackage flakePkgs.luaPackages;
         lua52_dbus_proxy = buildPackage flakePkgs.lua52Packages;
         lua53_dbus_proxy = buildPackage flakePkgs.lua53Packages;
         luajit_dbus_proxy = buildPackage flakePkgs.luajitPackages;
       };
 
       overlay = final: prev: with self.packages.x86_64-linux; {
+        lua = prev.lua.override {
+          packageOverrides = this: other: {
+            dbus_proxy = lua52_dbus_proxy;
+          };
+        };
+
         lua5_2 = prev.lua5_2.override {
           packageOverrides = this: other: {
             dbus_proxy = lua52_dbus_proxy;
