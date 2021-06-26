@@ -104,11 +104,24 @@
         luajit_dbus_proxy = buildPackage flakePkgs.luajitPackages;
       };
 
-      overlay = final: prev: {
-        # TODO: can I add these to the main luaPackages in nixpkgs?
-        extraLua52Packages.dbus_proxy = self.packages.x86_64-linux.lua52_dbus_proxy;
-        extraLua53Packages.dbus_proxy = self.packages.x86_64-linux.lua53_dbus_proxy;
-        extraLuaJitPackages.dbus_proxy = self.packages.x86_64-linux.luajit_dbus_proxy;
+      overlay = final: prev: with self.packages.x86_64-linux; {
+        lua5_2 = prev.lua5_2.override {
+          packageOverrides = this: other: {
+            dbus_proxy = lua52_dbus_proxy;
+          };
+        };
+
+        lua5_3 = prev.lua5_3.override {
+          packageOverrides = this: other: {
+            dbus_proxy = lua53_dbus_proxy;
+          };
+        };
+
+        luajit = prev.luajit.override {
+          packageOverrides = this: other: {
+            dbus_proxy = luajit_dbus_proxy;
+          };
+        };
       };
 
       devShell.x86_64-linux = flakePkgs.mkShell {
