@@ -35,8 +35,8 @@
 
         };
 
-      makeCheck = lua: flakePkgs.nixosTest {
-        name = lua.pkgs.dbus_proxy.name;
+      makeCheck = lua: luaPackages: flakePkgs.nixosTest {
+        name = luaPackages.dbus_proxy.name;
         nodes.machine = { pkgs, lib, ... }: {
 
           virtualisation.writableStore = true;
@@ -57,8 +57,8 @@
               };
 
               dbus_proxy_app = lua.withPackages (ps: [
-                ps.dbus_proxy
-              ] ++ lua.pkgs.dbus_proxy.buildInputs);
+                luaPackages.dbus_proxy
+              ] ++ luaPackages.dbus_proxy.buildInputs);
             })
 
           ];
@@ -111,29 +111,30 @@
       };
 
       overlay = final: prev: with self.packages.x86_64-linux; {
-        lua = prev.lua.override {
-          packageOverrides = this: other: {
-            dbus_proxy = lua52_dbus_proxy;
-          };
+        # NOTE: lua = prev.lua.override { packageOverrides = this: other: {... }}
+        # Seems to be broken as it does not allow to combine different overlays.
+
+        luaPackages = prev.luaPackages // {
+          dbus_proxy = lua_dbus_proxy;
         };
 
-        lua5_2 = prev.lua5_2.override {
-          packageOverrides = this: other: {
-            dbus_proxy = lua52_dbus_proxy;
-          };
+        # Lua 5.1 is does not work
+        # lua51Packages = prev.lua51Packages // {
+        #   dbus_proxy = lua51_dbus_proxy;
+        # };
+
+        lua52Packages = prev.lua52Packages // {
+          dbus_proxy = lua52_dbus_proxy;
         };
 
-        lua5_3 = prev.lua5_3.override {
-          packageOverrides = this: other: {
-            dbus_proxy = lua53_dbus_proxy;
-          };
+        lua53Packages = prev.lua53Packages // {
+          dbus_proxy = lua53_dbus_proxy;
         };
 
-        luajit = prev.luajit.override {
-          packageOverrides = this: other: {
-            dbus_proxy = luajit_dbus_proxy;
-          };
+        luajitPackages = prev.luajitPackages // {
+          dbus_proxy = luajit_dbus_proxy;
         };
+
       };
 
       devShell.x86_64-linux = flakePkgs.mkShell {
@@ -144,9 +145,9 @@
       };
 
       checks.x86_64-linux = {
-        lua52Check = makeCheck flakePkgs.lua5_2;
-        lua53Check = makeCheck flakePkgs.lua5_3;
-        luajitCheck = makeCheck flakePkgs.luajit;
+        lua52Check = with flakePkgs; makeCheck lua5_2 lua52Packages;
+        lua53Check = with flakePkgs; makeCheck lua5_3 lua53Packages;
+        luajitCheck = with flakePkgs; makeCheck luajit luajitPackages;
       };
 
     };
