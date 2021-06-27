@@ -36,6 +36,20 @@ endif
 flake:
 	nix flake check
 
+.PHONY: test-driver
+ifndef CHECK_NAME
+test-driver:
+	$(error Fatal: must specify CHECK_NAME)
+else
+test-driver:
+	nix build '.#checks.x86_64-linux.$(CHECK_NAME).driver'
+	@echo -e "Execute with:\n \
+	- interactive:\n \
+	   result/bin/nixos-test-driver\n \
+	- automated: \n \
+	  tests='exec(os.environ["testScript"])' result/bin/nixos-test-driver"
+endif
+
 .PHONY: check
 check: lint test coverage
 
