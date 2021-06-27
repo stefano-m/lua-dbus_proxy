@@ -8,20 +8,19 @@
         overlays = [ self.overlay ];
       };
 
-      buildPackage = luaPackages: with luaPackages;
+      currentVersion = builtins.readFile ./VERSION;
+
+      buildPackage = pname: luaPackages: with luaPackages;
         buildLuaPackage rec {
           name = "${pname}-${version}";
-          pname = "dbus_proxy";
-          # FIXME: add a Makefile or something so that 'make release' generates
-          # the version, adds a tag and commits. Then we can read the version
-          # with builtins.reafFile (beware of newlines!)
-          version = "v0.10.0-${self.shortRev or "dev"}";
+          inherit pname;
+          version = "${currentVersion}-${self.shortRev or "dev"}";
 
           src = ./.;
 
           propagatedBuildInputs = [ lua lgi ];
 
-          buildInputs = [ busted luacov ldoc ];
+          buildInputs = [ busted luacov ldoc luacheck ];
 
           buildPhase = ":";
 
@@ -30,8 +29,8 @@
             cp -r src/${pname} "$out/share/lua/${lua.luaversion}/"
           '';
 
-          doCheck = false; # see flake checks
-          checkPhase = "busted .";
+          doCheck = true; # more tests done using the flake checks
+          checkPhase = "luacheck src tests";
 
         };
 
@@ -104,10 +103,10 @@
       defaultPackage.x86_64-linux = self.packages.x86_64-linux.lua_dbus_proxy;
 
       packages.x86_64-linux = {
-        lua_dbus_proxy = buildPackage flakePkgs.luaPackages;
-        lua52_dbus_proxy = buildPackage flakePkgs.lua52Packages;
-        lua53_dbus_proxy = buildPackage flakePkgs.lua53Packages;
-        luajit_dbus_proxy = buildPackage flakePkgs.luajitPackages;
+        lua_dbus_proxy = buildPackage "dbus_proxy" flakePkgs.luaPackages;
+        lua52_dbus_proxy = buildPackage "dbus_proxy" flakePkgs.lua52Packages;
+        lua53_dbus_proxy = buildPackage "dbus_proxy" flakePkgs.lua53Packages;
+        luajit_dbus_proxy = buildPackage "dbus_proxy" flakePkgs.luajitPackages;
       };
 
       overlay = final: prev: with self.packages.x86_64-linux; {
@@ -141,6 +140,7 @@
         LUA_PATH = "./src/?.lua;./src/?/init.lua";
         buildInputs = (with self.defaultPackage.x86_64-linux; buildInputs ++ propagatedBuildInputs) ++ (with flakePkgs; [
           nixpkgs-fmt
+          luarocks
         ]);
       };
 
@@ -148,7 +148,7 @@
         lua52Check = with flakePkgs; makeCheck lua5_2 lua52Packages;
         lua53Check = with flakePkgs; makeCheck lua5_3 lua53Packages;
         luajitCheck = with flakePkgs; makeCheck luajit luajitPackages;
-      };
+      } // self.packages.x86_64-linux;
 
     };
 }
