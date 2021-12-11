@@ -94,6 +94,7 @@
           output = machine.succeed("cat /home/test-user/output")
           result = machine.succeed("cat /home/test-user/result")
           assert result == "0\n", "Test suite failed: {}".format(output)
+          print(output)
         '';
 
       };
