@@ -47,7 +47,7 @@ test-driver:
 	- interactive:\n \
 	   result/bin/nixos-test-driver\n \
 	- automated: \n \
-	  tests='exec(os.environ["testScript"])' result/bin/nixos-test-driver"
+	  tests='exec(os.environ[\"testScript\"])' result/bin/nixos-test-driver"
 endif
 
 .PHONY: check
