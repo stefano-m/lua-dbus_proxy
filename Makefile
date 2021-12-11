@@ -50,6 +50,10 @@ test-driver:
 	  tests='exec(os.environ[\"testScript\"])' result/bin/nixos-test-driver"
 endif
 
+.PHONY: integration-test
+integration-test: test-driver
+	tests='exec(os.environ["testScript"])' result/bin/nixos-test-driver
+
 .PHONY: check
 check: lint test coverage
 
