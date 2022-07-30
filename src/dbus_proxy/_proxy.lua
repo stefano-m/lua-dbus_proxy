@@ -233,8 +233,8 @@ local function call_async(proxy, interface, method, user_callback, context, args
     DBusCallFlags.NONE,
     _DEFAULT_TIMEOUT,
     nil,
-    function(_proxy, res)
-      local out, err = _proxy:call_finish(res)
+    function(receiver_proxy, res)
+      local out, err = receiver_proxy:call_finish(res)
 
       if not out and err then
           user_callback(proxy, context, out, err)
