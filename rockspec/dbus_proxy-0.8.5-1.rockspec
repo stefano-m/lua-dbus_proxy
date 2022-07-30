@@ -1,7 +1,7 @@
 package = "dbus_proxy"
 version = "0.8.5-1"
 source = {
-   url = "git://github.com/stefano-m/lua-dbus_proxy",
+   url = "https://github.com/stefano-m/lua-dbus_proxy",
    tag = "v0.8.5"
 }
 description = {

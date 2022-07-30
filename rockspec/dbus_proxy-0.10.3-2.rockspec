@@ -1,8 +1,8 @@
 package = "dbus_proxy"
-version = "0.10.2-1"
+version = "0.10.3-2"
 source = {
    url = "https://github.com/stefano-m/lua-dbus_proxy",
-   tag = "v0.10.2"
+   tag = "v0.10.3"
 }
 description = {
    summary = "Simple API around GLib's GIO:GDBusProxy built on top of lgi",
