@@ -1,3 +1,33 @@
+* Release v0.10.3
+
+Stefano Mazzucco (26):
+      Update travis-ci configuration
+      Factor out DBUS_NAME_FLAG_REPLACE_EXISTING in tests
+      Ensure we're asserting that a value changes in async tests
+      Test DBus's message bus properties rather than UPower's
+      Update travis-ci badge in README.md
+      Use Ununtu 18.04 (bionic) rather than 16.04 (xenial) in CI
+      Add an underscore to a property if it has the same name as a method
+      Don't skip a test if DBUS_ADDRESS env var is not found
+      Add flake.nix
+      Invert logic for defaultPackage in flake.nix
+      Use packageOverrides in overlay to add package to luaPackages
+      Modify flake checks to use overlay rather than package
+      Don't use lastModified date in flake version
+      Move comments to external notes
+      Add "default" lua override, use it as defaultPackage
+      Refactor flake overlays so they are composable
+      Add Makefile and other release goodies
+      Add make target to build the test driver
+      Update flake.lock
+      Fix printed output of 'make test-driver'
+      Add make target to run integration tests
+      Print integration test output
+      Remove 'result' with Make clean
+      Update flake.lock
+      Build nix-flake branch in travis-ci
+      Fix luacheck warning about using "unused" variable
+
 * Release v0.10.2
 
 Stefano Mazzucco (2):
