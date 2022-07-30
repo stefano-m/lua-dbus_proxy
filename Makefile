@@ -73,8 +73,8 @@ docs: $(files)
 	ldoc .
 
 .PHONY: upload
-upload: check
-	luarocks upload rockspec/$(project)-$(LUA_ENUM_VERSION).rockspec
+upload:
+	luarocks upload rockspec/$(project)-$(LUA_DBUS_PROXY_VERSION).rockspec
 
 .PHONY: clean
 clean:
