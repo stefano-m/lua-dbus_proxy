@@ -15,6 +15,7 @@ env:
 
 branches:
   only:
+    - nix-flake
     - travis-ci
     - master
 
