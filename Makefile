@@ -74,7 +74,13 @@ docs: $(files)
 
 .PHONY: upload
 upload:
-	luarocks upload rockspec/$(project)-$(LUA_DBUS_PROXY_VERSION).rockspec
+ifndef LUAROCKS_API_KEY
+	$(error LUAROCKS_API_KEY must be defined)
+endif
+ifndef LUA_DBUS_PROXY_VERSION
+	$(error LUA_DBUS_PROXY_VERSION must be defined)
+endif
+	@luarocks upload --api-key=$(LUAROCKS_API_KEY) rockspec/$(project)-$(LUA_DBUS_PROXY_VERSION).rockspec
 
 .PHONY: clean
 clean:
