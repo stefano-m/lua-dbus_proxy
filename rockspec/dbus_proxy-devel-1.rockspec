@@ -1,13 +1,13 @@
 package = "dbus_proxy"
  version = "devel-1"
  source = {
-    url = "https://github.com/stefano-m/lua-dbus_proxy",
+    url = "git+https://github.com/stefano-m/lua-dbus_proxy",
     tag = "master"
  }
  description = {
     summary = "Simple API around GLib's GIO:GDBusProxy built on top of lgi",
     detailed = "Simple API around GLib's GIO:GDBusProxy built on top of lgi",
-    homepage = "https://github.com/stefano-m/lua-dbus_proxy",
+    homepage = "git+https://github.com/stefano-m/lua-dbus_proxy",
     license = "Apache v2.0"
  }
  dependencies = {
