@@ -1,11 +1,11 @@
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.05";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
 
   outputs = { self, nixpkgs }:
     let
       flakePkgs = import nixpkgs {
         system = "x86_64-linux";
-        overlays = [ self.overlay ];
+        overlays = [ self.overlays.default ];
       };
 
       currentVersion = builtins.readFile ./VERSION;
@@ -39,11 +39,11 @@
         nodes.machine = { pkgs, lib, ... }: {
 
           virtualisation.writableStore = true;
-          nix.binaryCaches = lib.mkForce [ ]; # no network
+          nix.settings.substituters = lib.mkForce [ ]; # no network
 
           nixpkgs.overlays = [
 
-            self.overlay
+            self.overlays.default
 
             (this: super: {
 
@@ -80,11 +80,11 @@
           # To use DBus properly, login and execute the test suite.
           # strategy taken from nixos/tests/login.nix
           machine.wait_for_unit("multi-user.target")
-          machine.wait_until_tty_matches(1, "login: ")
+          machine.wait_until_tty_matches("1", "login: ")
           machine.send_chars("test-user\n")
-          machine.wait_until_tty_matches(1, "login: test-user")
+          machine.wait_until_tty_matches("1", "login: test-user")
           machine.wait_until_succeeds("pgrep login")
-          machine.wait_until_tty_matches(1, "Password: ")
+          machine.wait_until_tty_matches("1", "Password: ")
           machine.send_chars("just-A-pass\n")
           machine.wait_until_succeeds("pgrep -u test-user bash")
           machine.send_chars("busted $LUA_DBUS_PROXY_TESTS_PATH > output\n")
@@ -101,16 +101,15 @@
 
     in
     {
-      defaultPackage.x86_64-linux = self.packages.x86_64-linux.lua_dbus_proxy;
-
-      packages.x86_64-linux = {
+      packages.x86_64-linux = rec {
+        default = lua_dbus_proxy;
         lua_dbus_proxy = buildPackage "dbus_proxy" flakePkgs.luaPackages;
         lua52_dbus_proxy = buildPackage "dbus_proxy" flakePkgs.lua52Packages;
         lua53_dbus_proxy = buildPackage "dbus_proxy" flakePkgs.lua53Packages;
         luajit_dbus_proxy = buildPackage "dbus_proxy" flakePkgs.luajitPackages;
       };
 
-      overlay = final: prev: with self.packages.x86_64-linux; {
+      overlays.default = final: prev: with self.packages.x86_64-linux; {
         # NOTE: lua = prev.lua.override { packageOverrides = this: other: {... }}
         # Seems to be broken as it does not allow to combine different overlays.
 
@@ -137,9 +136,9 @@
 
       };
 
-      devShell.x86_64-linux = flakePkgs.mkShell {
+      devShells.x86_64-linux.default = flakePkgs.mkShell {
         LUA_PATH = "./src/?.lua;./src/?/init.lua";
-        buildInputs = (with self.defaultPackage.x86_64-linux; buildInputs ++ propagatedBuildInputs) ++ (with flakePkgs; [
+        buildInputs = (with self.packages.x86_64-linux.default; buildInputs ++ propagatedBuildInputs) ++ (with flakePkgs; [
           nixpkgs-fmt
           luarocks
         ]);
