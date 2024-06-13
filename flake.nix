@@ -1,5 +1,5 @@
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
 
   outputs = { self, nixpkgs }:
     let
@@ -64,6 +64,7 @@
 
           environment.variables = {
             LUA_DBUS_PROXY_TESTS_PATH = "${pkgs.dbus_proxy_tests}";
+            GI_TYPELIB_PATH = "${pkgs.lib.getLib pkgs.glib}/lib/girepository-1.0/";
           };
 
           users.users.test-user = {
@@ -116,11 +117,6 @@
         luaPackages = prev.luaPackages // {
           dbus_proxy = lua_dbus_proxy;
         };
-
-        # Lua 5.1 is does not work
-        # lua51Packages = prev.lua51Packages // {
-        #   dbus_proxy = lua51_dbus_proxy;
-        # };
 
         lua52Packages = prev.lua52Packages // {
           dbus_proxy = lua52_dbus_proxy;
