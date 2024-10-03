@@ -31,7 +31,7 @@ setmetatable(_Bus,
                    -- key = "unix:path=/run/user/1000/pulse/dbus-socket"
                    v = Gio.DBusConnection.new_for_address_sync(
                      key,
-                     Gio.DBusConnectionFlags.NONE)
+                     Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT + Gio.DBusConnectionFlags.MESSAGE_BUS_CONNECTION)
                  end
                  rawset(tbl, key, v)
                  return v
