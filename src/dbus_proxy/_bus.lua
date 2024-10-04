@@ -66,6 +66,32 @@ invalid2 = Bus.this_will_not_work
 assert(nil == invalid2)
 ]]
 local Bus = {}
+
+--[[-- Create a new DBus connection and add it to the Bus table.
+
+@param[type=string] path a valid DBus address
+
+@param[type=Gio.DBusConnectionFlags] flags valid Gio.DBusConnectionFlags, if
+not specified it will default to Gio.DBusConnectionFlags.NONE
+
+@usage
+  local Gio = require("lgi").Gio
+  local Bus = require("dbus_proxy").Bus
+  local ibus = Bus.new(
+      "org.freedesktop.IBus",
+      Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT
+  )
+  assert(Bus["org.freedesktop.IBus"] == ibus)
+]]
+function Bus.new(path, flags)
+  local bus = Gio.DBusConnection.new_for_address_sync(
+    path,
+    flags or Gio.DBusConnectionFlags.NONE
+  )
+  rawset(_Bus, path, bus)
+  return bus
+end
+
 setmetatable(Bus,
              {__index = _Bus,
               __newindex = function() error("Cannot set values", 2) end})

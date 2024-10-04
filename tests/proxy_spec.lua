@@ -6,6 +6,7 @@ local unpack = unpack or table.unpack -- luacheck: globals unpack
 require("busted")
 
 local GLib = require("lgi").GLib
+local Gio = require("lgi").Gio
 local GVariant = GLib.Variant
 
 local p = require("dbus_proxy")
@@ -44,6 +45,24 @@ describe("The Bus table", function ()
                 assert.equals("userdata", type(bus))
                 assert.equals("Gio.DBusConnection", bus._name)
            end)
+
+           it("can use the Bus:new method without flags", function()
+                local address = os.getenv("DBUS_SESSION_BUS_ADDRESS")
+                local bus = Bus.new(address)
+                assert.equals(bus, Bus[address])
+                assert.is_true(bus.flags.NONE)
+                assert.is_nil(bus.flags.AUTHENTICATION_CLIENT)
+           end)
+
+           it("can use the Bus:new method with flags", function()
+                local address = os.getenv("DBUS_SESSION_BUS_ADDRESS")
+                local bus = Bus.new(address,
+                                    Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT)
+                assert.equals(bus, Bus[address])
+                assert.is_true(bus.flags.NONE)
+                assert.is_true(bus.flags.AUTHENTICATION_CLIENT)
+           end)
+
 end)
 
 describe("Stripping GVariant of its type", function ()

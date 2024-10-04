@@ -27,6 +27,7 @@
 <h1>dbus_proxy</h1>
 
 
+
 <h2>Contents</h2>
 <ul>
 <li><a href="#_proxy_Functions">_proxy Functions</a></li>
@@ -57,7 +58,7 @@
     <h3>Info:</h3>
     <ul>
         <li><strong>Copyright</strong>: (2017) Stefano Mazzucco,(2018 - 2020) Stefano Mazzucco and contributors</li>
-        <li><strong>Release</strong>: v0.10.3</li>
+        <li><strong>Release</strong>: @VERSION@</li>
         <li><strong>License</strong>: Apache License, version 2.0</li>
         <li><strong>Author</strong>: Stefano Mazzucco <stefano AT curso DOT re> and contributors</li>
     </ul>
@@ -89,6 +90,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#Bus">Bus</a></td>
 	<td class="summary">Available connections to the DBus daemon.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Bus.new">Bus.new (path, flags)</a></td>
+	<td class="summary">Create a new DBus connection and add it to the Bus table.</td>
 	</tr>
 </table>
 <h2><a href="#_variant_Functions">_variant Functions</a></h2>
@@ -204,7 +209,7 @@ this is particularly useful when you want to integrate your code with an
     <h3>Usage:</h3>
     <ul>
         <pre class="example">p = <span class="global">require</span>(<span class="string">"dbus_proxy"</span>)
-proxy = p.Proxy:new(
+proxy = p.Proxy:<span class="function-name">new</span>(
     {
       bus = p.Bus.SYSTEM,
       name = <span class="string">"com.example.BusName"</span>,
@@ -213,20 +218,20 @@ proxy = p.Proxy:new(
     }
 )
 
-res, err = proxy:SomeMethod()
+res, err = proxy:<span class="function-name">SomeMethod</span>()
 <span class="comment">-- Check whether an error occurred.
 </span><span class="keyword">if</span> <span class="keyword">not</span> res <span class="keyword">and</span> err <span class="keyword">then</span>
     <span class="global">print</span>(<span class="string">"Error:"</span>, err)
     <span class="global">print</span>(<span class="string">"Error code:"</span>, err.code)
 <span class="keyword">end</span>
 
-proxy:SomeMethodWithArguments(<span class="string">"hello"</span>, <span class="number">123</span>)
+proxy:<span class="function-name">SomeMethodWithArguments</span>(<span class="string">"hello"</span>, <span class="number">123</span>)
 proxy.SomeProperty
 
 <span class="comment">-- Asynchronous method calls are also supported, they have the "Async"
 </span><span class="comment">-- suffix. For example:
 </span>
-<span class="keyword">local</span> <span class="keyword">function</span> callback_fn(proxy, context, success, failure)
+<span class="keyword">local</span> <span class="keyword">function</span> <span class="function-name">callback_fn</span>(proxy, context, success, failure)
   <span class="keyword">if</span> failure ~= <span class="keyword">nil</span> <span class="keyword">then</span>  <span class="comment">-- error from the DBus Method
 </span>    <span class="global">print</span>(<span class="string">"Error:"</span>, failure)
     <span class="global">print</span>(<span class="string">"Error code:"</span>, failure.code)
@@ -240,7 +245,7 @@ proxy.SomeProperty
 <span class="keyword">end</span>
 
 <span class="keyword">local</span> my_context = {call_id = <span class="string">"my-id"</span>}
-some_proxy:SomeMethodWithArgumentsAsync(callback_fn, my_context, <span class="string">"hello"</span>, <span class="number">123</span>)
+some_proxy:<span class="function-name">SomeMethodWithArgumentsAsync</span>(callback_fn, my_context, <span class="string">"hello"</span>, <span class="number">123</span>)
 
 <span class="comment">-- Do something else while waiting for the callback to be called with the
 </span><span class="comment">-- result</span></pre>
@@ -283,7 +288,7 @@ specified, only signals from this sender will be taken into account.
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example">proxy:connect_signal(
+        <pre class="example">proxy:<span class="function-name">connect_signal</span>(
   <span class="keyword">function</span> (p, x, y)
     <span class="global">assert</span>(p == proxy)
     <span class="global">print</span>(<span class="string">"SomeSignalName emitted with params: "</span>, x, y)
@@ -320,7 +325,7 @@ specified, only signals from this sender will be taken into account.
 
     <h3>Usage:</h3>
     <ul>
-        <pre class="example">proxy:on_properties_changed(<span class="keyword">function</span> (p, changed, invalidated)
+        <pre class="example">proxy:<span class="function-name">on_properties_changed</span>(<span class="keyword">function</span> (p, changed, invalidated)
     <span class="global">assert</span>(p == proxy)
     <span class="global">print</span>(<span class="string">"******"</span>)
     <span class="global">print</span>(<span class="string">"changed properties:"</span>)
@@ -415,7 +420,7 @@ session_bus = Bus.SESSION
 
 <span class="comment">-- This is a string that looks like
 </span><span class="comment">-- "unix:path=/run/user/1000/bus"
-</span>address = <span class="global">os</span>.getenv(<span class="string">"DBUS_SESSION_BUS_ADDRESS"</span>)
+</span>address = <span class="global">os</span>.<span class="function-name">getenv</span>(<span class="string">"DBUS_SESSION_BUS_ADDRESS"</span>)
 
 bus = Bus[address]
 <span class="global">assert</span>(<span class="string">"Gio.DBusConnection"</span> == bus._name)
@@ -425,6 +430,42 @@ invalid1 = Bus[<span class="string">"something really wrong"</span>]
 
 invalid2 = Bus.this_will_not_work
 <span class="global">assert</span>(<span class="keyword">nil</span> == invalid2)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "Bus.new"></a>
+    <strong>Bus.new (path, flags)</strong>
+    </dt>
+    <dd>
+    Create a new DBus connection and add it to the Bus table.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">path</span>
+            <span class="types"><span class="type">string</span></span>
+         a valid DBus address
+        </li>
+        <li><span class="parameter">flags</span>
+            <span class="types"><span class="type">Gio.DBusConnectionFlags</span></span>
+         valid Gio.DBusConnectionFlags, if
+not specified it will default to Gio.DBusConnectionFlags.NONE
+        </li>
+    </ul>
+
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> Gio = <span class="global">require</span>(<span class="string">"lgi"</span>).Gio
+<span class="keyword">local</span> Bus = <span class="global">require</span>(<span class="string">"dbus_proxy"</span>).Bus
+<span class="keyword">local</span> ibus = Bus.<span class="function-name">new</span>(
+    <span class="string">"org.freedesktop.IBus"</span>,
+    Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT
+)
+<span class="global">assert</span>(Bus[<span class="string">"org.freedesktop.IBus"</span>] == ibus)</pre>
     </ul>
 
 </dd>
@@ -474,19 +515,19 @@ type correspondence is straightforward:</p>
         <pre class="example">GVariant = <span class="global">require</span>(<span class="string">"lgi"</span>).GLib.VariantType
 
 <span class="comment">-- strip a nested variant
-</span>v1 = GVariant(<span class="string">"v"</span>, GVariant(<span class="string">"s"</span>, <span class="string">"in a variant"</span>))
-stripped1 = variant.strip(v1)
+</span>v1 = <span class="function-name">GVariant</span>(<span class="string">"v"</span>, <span class="function-name">GVariant</span>(<span class="string">"s"</span>, <span class="string">"in a variant"</span>))
+stripped1 = variant.<span class="function-name">strip</span>(v1)
 <span class="comment">-- "in a variant"
 </span>
 <span class="comment">-- strip a dictionary of variants
-</span>v2 = GVariant(<span class="string">"a{sv}"</span>, {one = GVariant(<span class="string">"i"</span>, <span class="number">123</span>),
-                              two = GVariant(<span class="string">"s"</span>, <span class="string">"Lua!"</span>)})
-stripped2 = variant.strip(v2)
+</span>v2 = <span class="function-name">GVariant</span>(<span class="string">"a{sv}"</span>, {one = <span class="function-name">GVariant</span>(<span class="string">"i"</span>, <span class="number">123</span>),
+                              two = <span class="function-name">GVariant</span>(<span class="string">"s"</span>, <span class="string">"Lua!"</span>)})
+stripped2 = variant.<span class="function-name">strip</span>(v2)
 <span class="comment">-- {one = 123, two = "Lua!"}
 </span>
 <span class="comment">-- strip a nested array
-</span>v3 = GVariant(<span class="string">"aai"</span>, {{<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>}, {<span class="number">4</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>}})
-stripped3 = variant.strip(v3)
+</span>v3 = <span class="function-name">GVariant</span>(<span class="string">"aai"</span>, {{<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>}, {<span class="number">4</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>}})
+stripped3 = variant.<span class="function-name">strip</span>(v3)
 <span class="comment">-- {{1, 2, 3}, {4, 1, 2, 3}, n=2}</span></pre>
     </ul>
 
@@ -564,15 +605,15 @@ opts = {
   interface = <span class="string">"com.example.InterfaceName"</span>,
   path = <span class="string">"/com/example/objectPath"</span>
 }
-<span class="keyword">function</span> callback(proxy, appeared)
+<span class="keyword">function</span> <span class="function-name">callback</span>(proxy, appeared)
   <span class="keyword">if</span> appeared <span class="keyword">then</span>
     <span class="comment">-- proxy.is_connected is true
-</span>    proxy:SomeMethod()
+</span>    proxy:<span class="function-name">SomeMethod</span>()
   <span class="keyword">else</span>
     <span class="comment">-- proxy.is_connected is false
 </span>  <span class="keyword">end</span>
 <span class="keyword">end</span>
-proxy = p.monitored.new(opts, callback)</pre>
+proxy = p.monitored.<span class="function-name">new</span>(opts, callback)</pre>
     </ul>
 
 </dd>
@@ -582,7 +623,7 @@ proxy = p.monitored.new(opts, callback)</pre>
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
-<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.6</a></i>
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
 <i style="float:right;">Last updated 1980-01-01 00:00:00 </i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
