@@ -17,7 +17,7 @@
 --[[--
   Simple API around GLib's GIO:GDBusProxy built on top of lgi.
 
-  @release @VERSION@
+  @release v0.10.4
   @license Apache License, version 2.0
   @author Stefano Mazzucco <stefano AT curso DOT re> and contributors
   @copyright (2017) Stefano Mazzucco

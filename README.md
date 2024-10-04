@@ -2,7 +2,7 @@
 Status](https://travis-ci.com/stefano-m/lua-dbus_proxy.svg?branch=master)](https://travis-ci.com/stefano-m/lua-dbus_proxy)
 [![codecov](https://codecov.io/gh/stefano-m/lua-dbus_proxy/branch/master/graph/badge.svg)](https://codecov.io/gh/stefano-m/lua-dbus_proxy)
 
-DBus Proxy Objects for Lua - @VERSION@
+DBus Proxy Objects for Lua - v0.10.4
 --------------------------
 
 `dbus_proxy` is a Lua module built on top

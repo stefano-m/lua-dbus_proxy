@@ -1,3 +1,17 @@
+* Release v0.10.4
+
+Stefano Mazzucco (11):
+      Fix upload target in Makefile
+      Update rockspec files to use https url
+      Use correct git+https url syntax in rockspec
+      Make upload target more robust
+      nixpkgs 21.05 -> 22.11
+      NixOS: 22.11 -> 24.05, fix and refactor tests
+      Update flake.lock
+      Add option to print build logs in the Makefile's nix build
+      Use Lua 5.3 in the flake's DevShell
+      Add Bus.new method do create bus connections with flags
+
 * Release v0.10.3
 
 Stefano Mazzucco (26):
