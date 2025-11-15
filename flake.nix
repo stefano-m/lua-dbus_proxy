@@ -18,7 +18,7 @@
 
           src = ./.;
 
-          propagatedBuildInputs = [ lua lgi ];
+          propagatedBuildInputs = [ lua lgi flakePkgs.gobject-introspection ];
 
           buildInputs = [ busted luacov ldoc luacheck ];
 
